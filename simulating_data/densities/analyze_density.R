@@ -57,7 +57,7 @@ for (file_name in lfs) {
              'spat_',
              str_extract(file_name, '.*(?=\\.csv)'),
              '.pdf'))
-  p_spat
+  print(p_spat)
   dev.off()
   dat <- dats[[file_name]]
   ## calculate the zscore for the multiple-test correction
@@ -70,7 +70,7 @@ for (file_name in lfs) {
              str_extract(file_name, '.*(?=\\.csv)'),
              '.pdf'),
       height = 3.5, width = 4)
-  p
+  print(p)
   dev.off()
   ## trends
   p1 <- dat %>% 
