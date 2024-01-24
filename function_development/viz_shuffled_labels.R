@@ -5,6 +5,8 @@
 #' and clusters.
 #' 
 #' @param cells sf object; spatial (x and y) coordinates and celltypes column
+#' @param shuffledList list; cell type labels shuffled at different scales 
+#' (output from makeShuffledCells())
 #' @param gridSize numeric; size of the grid to plot
 #' @param ofInterest character vector; a vector of specific clusters to visualize
 #' @param pointSize numeric; size of points
@@ -24,12 +26,11 @@ vizShuffledLabels <- function(cells, shuffledList, gridSize, permutation = 1,
                               ofInterest = NULL,
                               pointSize = 1, alpha = 0.5){
   
-  if (!is.null(permutation)) {
-    shuffled_labels <- shuffledList[[as.character(gridSize)]][[as.character(permutation)]]
-    cells$celltypes <- as.factor(shuffled_labels)
-    vizGrids(cells, gridSize, ofInterest = NULL,
-             pointSize = 1, alpha = 0.5)
-  }
+  shuffled_labels <- shuffledList[[as.character(gridSize)]][[as.character(permutation)]]
+  cells$celltypes <- as.factor(shuffled_labels)
+  
+  vizGrids(cells, gridSize, ofInterest, pointSize, alpha)
+  
 }
 
 
