@@ -63,34 +63,33 @@ t21 %>%
 # CRAWDAD -----------------------------------------------------------------
 
 cells <- crawdad::toSF(pos = t11[,c("x", "y")], celltypes = t11$celltypes)
-## define the scales to analyze the data
 scales <- seq(100, 3000, by=100)
-## shuffle cells to create null background
+
 shuffle.list <- crawdad:::makeShuffledCells(cells,
                                             scales = scales,
                                             perms = 5,
                                             ncores = 7,
                                             seed = 1,
                                             verbose = TRUE)
-## calculate the zscore for the cell-type pairs at different scales
+## Time was 10.02 mins
+
 results <- crawdad::findTrends(cells,
                                dist = 50,
                                shuffle.list = shuffle.list,
                                ncores = 7,
                                verbose = TRUE,
                                returnMeans = FALSE)
-dat <- crawdad::meltResultsList(results, withPerms = TRUE)
-## calculate the zscore for the multiple-test correction
+dat11 <- crawdad::meltResultsList(results, withPerms = TRUE)
+## Time was 113.36 mins
+saveRDS(dat11, "running_code/processed_data/dat11.RDS")
+
 ntests <- length(unique(dat$reference)) * length(unique(dat$reference))
 psig <- 0.05/ntests
 zsig <- round(qnorm(psig/2, lower.tail = F), 2)
-## summary visualization
-p <- vizColocDotplot(dat, zsig.thresh = zsig, zscore.limit = 2*zsig) +
+
+vizColocDotplot(dat11, zsig.thresh = zsig, zscore.limit = 2*zsig,
+                dot.sizes = c(2,17)) +
   theme(axis.text.x = element_text(angle = 35, h = 0))
-p
-pdf('rafael/thymus/coloc11.pdf', width = 7, height = 5)
-p
-dev.off()
 
 
 
