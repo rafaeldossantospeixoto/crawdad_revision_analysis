@@ -3,3 +3,4 @@ revision_analysis.Rproj
 *.Rproj.user/
 running_code/data/CODEX.zip
 running_code/data/*
+.Rhistory
