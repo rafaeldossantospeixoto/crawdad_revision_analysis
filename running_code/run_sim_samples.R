@@ -45,9 +45,22 @@ psig <- 0.05/ntests
 zsig <- round(qnorm(psig/2, lower.tail = F), 2)
 
 ## viz 100
-vizColocDotplot(dat_100, reorder = TRUE, zsig.thresh = zsig, zscore.limit = zsig*2) +
+vizColocDotplot(dat_100, reorder = F, 
+                zsig.thresh = zsig, zscore.limit = zsig*2,
+                dot.sizes = c(10, 40)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
-vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, zscore.limit = zsig*2) +
+vizColocDotplot(dat_50, reorder = F, 
+                zsig.thresh = zsig, zscore.limit = zsig*2,
+                dot.sizes = c(10, 40)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
+
+dat1 <- dat_100
+dat2 <- dat_50
+
+vizDiffZscores(dat1, dat2, scale.thresh = 200, reorder = F, dot.size = 50)
+vizDiffZscores(dat2, dat1, scale.thresh = 200, reorder = F, dot.size = 50)
+
+vizDiffScales(dat1, dat2, zscore.thresh = 1.96, reorder = F, dot.size = 50)
+vizDiffScales(dat2, dat1, zscore.thresh = 1.96, reorder = F, dot.size = 50)
