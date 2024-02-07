@@ -94,7 +94,6 @@ vizColocDotplot(dat, reorder = F, zsig.thresh = zsig, zscore.limit = zsig*2) +
 data(sim)
 
 ## duplicate (2x)
-vizClusters(cells)
 bc_df <- sim[which(sim$celltypes %in% c('B', 'C')), ]
 rownames(bc_df) <- paste0(rownames(bc_df), 'dup2')
 table(bc_df$celltypes)
