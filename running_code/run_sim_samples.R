@@ -38,6 +38,7 @@ results_50 <- crawdad::findTrends(sim,
                                   verbose = TRUE,
                                   returnMeans = FALSE)
 dat_50 <- crawdad::meltResultsList(results_50, withPerms = T)
+saveRDS(dat_50, 'running_code/processed_data/dat_sim_50.RDS')
 
 ## multiple-test correction
 ntests <- length(unique(dat_100$reference)) * length(unique(dat_100$reference))
