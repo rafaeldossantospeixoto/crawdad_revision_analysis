@@ -3,11 +3,7 @@ revision_analysis.Rproj
 *.Rproj.user/
 running_code/data/CODEX.zip
 running_code/data/*
-<<<<<<< HEAD
+bugs/data/*
 .Rproj.user
 .Rhistory
-=======
-.Rhistory
-.Rproj.user
 crawdad_revision_analysis.Rproj
->>>>>>> b64eeb7f57b5c0111ee2e414fd11c6a1ee2fcdf1
