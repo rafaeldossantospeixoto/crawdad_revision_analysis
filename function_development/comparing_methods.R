@@ -163,16 +163,50 @@ dat_50 %>%
 ### Save plots --------------------------------------------------------------
 
 ## CRAWDAD
-dat_50 %>% 
+p <- dat_50 %>% 
   filter(reference == 'Purkinje') %>% 
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
   geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_neighbor), 
             size = .5) +
-  scale_color_manual(name = 'Group', values = c(selected_colors, 'lightgray')) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
   ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.3, linetype = "dashed") + 
   ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
   labs(title = 'CRAWDAD') + 
   theme_bw()
+pdf('function_development/comparing_methods/paper_figures/cerebellum_crawdad.pdf')
+p
+dev.off()
 
+## Squidpy
+p <- dat_sp %>% 
+  filter(reference == 'Purkinje') %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = 'Squidpy Co-occurrence') + 
+  theme_bw()
+p
+pdf('function_development/comparing_methods/paper_figures/cerebellum_squidpy.pdf')
+p
+dev.off()
+
+## Ripleys
+p <- dat_rk %>% 
+  filter(reference == 'Purkinje') %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
+  theme_bw()
+p
+pdf('function_development/comparing_methods/paper_figures/cerebellum_ripleys.pdf')
+p
+dev.off()

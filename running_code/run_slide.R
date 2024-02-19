@@ -2,7 +2,7 @@
 
 library(crawdad)
 library(tidyverse)
-ncores <- 5
+ncores <- 7
 
 data(slide)
 
