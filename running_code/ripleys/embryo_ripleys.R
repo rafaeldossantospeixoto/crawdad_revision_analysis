@@ -6,9 +6,12 @@ data(seq)
 write.csv(seq, 'running_code/data/seq_df.csv')
 
 
+
 # Endothelium -------------------------------------------------------------
 
 reference_ct <- 'Endothelium'
+
+## Homogeneous -------------------------------------------------------------
 
 ## run ripley's L
 ## need to convert to these point process objects
@@ -17,29 +20,24 @@ ppo  <- ppp(x=seq$x, y=seq$y,
             marks=factor(seq$celltypes))
 ## run on all
 rkc <- do.call(rbind, lapply(levels(ppo$marks), function(x) {
-  test <- Kcross(ppo,reference_ct, x)
+  test <- Kcross(ppo, reference_ct, x)
+  df_test <- data.frame(reference = reference_ct,
+                        neighbor = x,
+                        radius = test$r)
   ## isotropic-corrected minus theoretical
-  test$iso - test$theo
+  df_test$score <- test$iso - test$theo
+  return(df_test)
 }))
-rownames(rkc) <- levels(ppo$marks)
-# colnames(rkc) <- ppo$r
 
-## plot
-rkc.melt <- reshape2::melt(rkc)
-colnames(rkc.melt) <- c('celltype', 'distance', 'score')
-head(rkc.melt)
-
-rkc.melt %>%  
+rkc %>%  
   ggplot() +
-  geom_line(aes(x=distance, y=score, color=celltype)) +
-  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.6, linetype = "dotted") +
+  geom_line(aes(x=radius, y=score, color=neighbor)) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
   ggplot2::theme_classic() +
-  ggplot2::scale_color_manual(values = rainbow(length(unique(rkc.melt$celltype)))) +
+  ggplot2::scale_color_manual(values = rainbow(length(unique(rkc$neighbor)))) +
   labs(y = "isotropic-corrected minus theoretical score")
 
-df <- rkc.melt
-colnames(df) <- c('neighbor', 'distance', 'score')
-df$reference <- reference_ct
+df <- rkc
 df$permutation <- 1
 saveRDS(df, paste0("running_code/processed_data/dat_embryo_ripleys_",
                    sub(" ", "_", reference_ct),
@@ -47,9 +45,11 @@ saveRDS(df, paste0("running_code/processed_data/dat_embryo_ripleys_",
 
 
 
-# Endothelium -------------------------------------------------------------
+# Intermediate mesoderm -----------------------------------------------------
 
 reference_ct <- 'Intermediate mesoderm'
+
+## Homogeneous -------------------------------------------------------------
 
 ## run ripley's L
 ## need to convert to these point process objects
@@ -58,29 +58,24 @@ ppo  <- ppp(x=seq$x, y=seq$y,
             marks=factor(seq$celltypes))
 ## run on all
 rkc <- do.call(rbind, lapply(levels(ppo$marks), function(x) {
-  test <- Kcross(ppo,reference_ct, x)
+  test <- Kcross(ppo, reference_ct, x)
+  df_test <- data.frame(reference = reference_ct,
+                        neighbor = x,
+                        radius = test$r)
   ## isotropic-corrected minus theoretical
-  test$iso - test$theo
+  df_test$score <- test$iso - test$theo
+  return(df_test)
 }))
-rownames(rkc) <- levels(ppo$marks)
-# colnames(rkc) <- ppo$r
 
-## plot
-rkc.melt <- reshape2::melt(rkc)
-colnames(rkc.melt) <- c('celltype', 'distance', 'score')
-head(rkc.melt)
-
-rkc.melt %>%  
+rkc %>%  
   ggplot() +
-  geom_line(aes(x=distance, y=score, color=celltype)) +
-  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.6, linetype = "dotted") +
+  geom_line(aes(x=radius, y=score, color=neighbor)) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
   ggplot2::theme_classic() +
-  ggplot2::scale_color_manual(values = rainbow(length(unique(rkc.melt$celltype)))) +
+  ggplot2::scale_color_manual(values = rainbow(length(unique(rkc$neighbor)))) +
   labs(y = "isotropic-corrected minus theoretical score")
 
-df <- rkc.melt
-colnames(df) <- c('neighbor', 'distance', 'score')
-df$reference <- reference_ct
+df <- rkc
 df$permutation <- 1
 saveRDS(df, paste0("running_code/processed_data/dat_embryo_ripleys_",
                    sub(" ", "_", reference_ct),
