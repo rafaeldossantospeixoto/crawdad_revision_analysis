@@ -3,6 +3,7 @@ library(tidyverse)
 library(spatstat)
 
 data(seq)
+write.csv(seq, 'running_code/data/seq_df.csv')
 
 
 # Endothelium -------------------------------------------------------------
