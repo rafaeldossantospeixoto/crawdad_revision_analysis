@@ -32,7 +32,7 @@ rkc.melt %>%
   labs(y = "isotropic-corrected minus theoretical score")
 
 df <- rkc.melt
-colnames(df) <- c('neighbor', 'scale', 'score')
+colnames(df) <- c('neighbor', 'distance', 'score')
 df$reference <- 'Purkinje'
 df$permutation <- 1
 saveRDS(df, "running_code/processed_data/dat_cerebellum_ripleys.RDS")

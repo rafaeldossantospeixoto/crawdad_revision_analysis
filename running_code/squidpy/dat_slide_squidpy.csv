@@ -1,4 +1,4 @@
-,neighbor,Z,scale,reference,id,perm
+,neighbor,probability,distance,reference,id,perm
 0,Astrocytes,1.1441519,119.67351,Astrocytes,0,1
 1,Astrocytes,1.1690404,149.91208,Astrocytes,0,1
 2,Astrocytes,1.1291436,180.15063,Astrocytes,0,1

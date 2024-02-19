@@ -1,4 +1,4 @@
-,neighbor,Z,scale,reference,id,perm
+,neighbor,probability,distance,reference,id,perm
 0,A,3.4698737,53.210125,A,0,1
 1,A,3.0437765,81.325584,A,0,1
 2,A,2.6785433,109.44105,A,0,1
