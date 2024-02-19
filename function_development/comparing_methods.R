@@ -114,8 +114,9 @@ p <- dat_rk %>%
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = selected_neighbor), 
             size = .5) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
   scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
@@ -261,8 +262,9 @@ p <- dat_rk %>%
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = selected_neighbor), 
             size = .5) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
   scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
@@ -342,8 +344,9 @@ p <- dat_rk %>%
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = selected_neighbor), 
             size = .5) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
   scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
@@ -414,8 +417,9 @@ p <- dat_rk %>%
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = selected_neighbor), 
             size = .5) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
   scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
