@@ -270,3 +270,158 @@ p
 pdf('function_development/comparing_methods/paper_figures/cerebellum_ripleys.pdf')
 p
 dev.off()
+
+
+# Seq -------------------------------------------------------------------
+
+dat_sp <- read.csv('running_code/squidpy/dat_seq_squidpy.csv', row.names = 1)
+dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
+
+dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>% 
+  summarize(Z = mean(Z))
+
+zsig <- correctZBonferroni(dat_50)
+
+
+## Highlight Endothelium ------------------------------------------------
+
+reference_ct <- 'Endothelium'
+dat_rk <- readRDS(paste0("running_code/processed_data/dat_embryo_ripleys_",
+                         sub(" ", "_", reference_ct),
+                         ".RDS"))
+
+selected_cts <- c('Spinal cord','Haematoendothelial progenitors')
+all_cts <- unique(as.character(dat_50$neighbor))
+ordered_cts <- c(all_cts[!all_cts %in% selected_cts], selected_cts)
+selected_colors <- c('blue', 'red')
+all_colors <- c(rep('lightgray', times = length(all_cts) - length(selected_cts)), selected_colors)
+ordered_colors <- setNames(all_colors, ordered_cts)
+
+### Save plots --------------------------------------------------------------
+
+## CRAWDAD
+p <- dat_50 %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.3, linetype = "dashed") + 
+  ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
+  labs(title = 'CRAWDAD') + 
+  theme_bw()
+pdf(paste0('function_development/comparing_methods/paper_figures/embryo_crawdad_',
+           sub(" ", "_", reference_ct),
+           ".pdf"))
+p
+dev.off()
+
+## Squidpy
+p <- dat_sp %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = 'Squidpy Co-occurrence') + 
+  theme_bw()
+p
+pdf(paste0('function_development/comparing_methods/paper_figures/embryo_squidpy_',
+           sub(" ", "_", reference_ct),
+           ".pdf"))
+p
+dev.off()
+
+## Ripleys
+p <- dat_rk %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
+  theme_bw()
+p
+pdf(paste0('function_development/comparing_methods/paper_figures/embryo_ripleys_',
+           sub(" ", "_", reference_ct),
+           ".pdf"))
+p
+dev.off()
+
+
+## Highlight Intermediate mesoderm ------------------------------------------------
+
+reference_ct <- 'Intermediate mesoderm'
+dat_rk <- readRDS(paste0("running_code/processed_data/dat_embryo_ripleys_",
+                         sub(" ", "_", reference_ct),
+                         ".RDS"))
+
+selected_cts <- c('Spinal cord','Lateral plate mesoderm')
+all_cts <- unique(as.character(dat_50$neighbor))
+ordered_cts <- c(all_cts[!all_cts %in% selected_cts], selected_cts)
+selected_colors <- c('blue', 'red')
+all_colors <- c(rep('lightgray', times = length(all_cts) - length(selected_cts)), selected_colors)
+ordered_colors <- setNames(all_colors, ordered_cts)
+
+### Save plots --------------------------------------------------------------
+
+## CRAWDAD
+p <- dat_50 %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.3, linetype = "dashed") + 
+  ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
+  labs(title = 'CRAWDAD') + 
+  theme_bw()
+pdf(paste0('function_development/comparing_methods/paper_figures/embryo_crawdad_',
+           sub(" ", "_", reference_ct),
+           ".pdf"))
+p
+dev.off()
+
+## Squidpy
+p <- dat_sp %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = 'Squidpy Co-occurrence') + 
+  theme_bw()
+p
+pdf(paste0('function_development/comparing_methods/paper_figures/embryo_squidpy_',
+           sub(" ", "_", reference_ct),
+           ".pdf"))
+p
+dev.off()
+
+## Ripleys
+p <- dat_rk %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=score, group = neighbor, color = selected_neighbor), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
+  theme_bw()
+p
+pdf(paste0('function_development/comparing_methods/paper_figures/embryo_ripleys_',
+           sub(" ", "_", reference_ct),
+           ".pdf"))
+p
+dev.off()
