@@ -22,6 +22,10 @@ scales <- seq(100, 1000, by=100)
 ## define the number of cores for parallelization
 ncores <- parallel::detectCores() - 2
 
+## whether to use original or cleaned celltypes ("original" or "cleaned")
+ct_type <- "cleaned"
+ct_type
+
 for (slice in slices) {
   for (replicate in replicates) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
@@ -31,7 +35,13 @@ for (slice in slices) {
     spe <- readRDS(file = here("running_code", "processed_data", paste0(dataset_name, ".RDS")))
     
     ## convert dataframe to sf data.frame
-    cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), celltypes = colData(spe)$celltype)
+    if (ct_type == "original") {
+      # use original cell types
+      cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), celltypes = colData(spe)$celltype)
+    } else if (ct_type == "cleaned") {
+      # use cleaned cell types
+      cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), celltypes = colData(spe)$celltype_cleaned)
+    }
     
     ## visualize
     # crawdad::vizEachCluster(cells = cells,
@@ -45,7 +55,11 @@ for (slice in slices) {
                                                 ncores = ncores,
                                                 seed = 1,
                                                 verbose = TRUE)
-    saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
+    if (ct_type == "original") {
+      saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
+    } else if (ct_type == "cleaned") {
+      saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells_ct_cleaned.RDS")))
+    }
     ## calculate the zscore for the cell-type pairs at different scales
     ## error: Error in FUN(X[[i]], ...) : object 'neigh.cells' not found
     results <- crawdad::findTrends(cells = cells,
@@ -54,7 +68,11 @@ for (slice in slices) {
                                    ncores = ncores,
                                    verbose = TRUE,
                                    returnMeans = FALSE)
-    saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends.RDS")))
+    if (ct_type == "original") {
+      saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends.RDS")))
+    } else if (ct_type == "cleaned") {
+      saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+    }
   }
 }
 
