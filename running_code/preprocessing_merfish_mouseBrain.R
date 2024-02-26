@@ -4,12 +4,7 @@
 
 # Set up ------------------------------------------------------------------
 
-setwd("~/Desktop/SEraster")
-devtools::load_all()
-
-setwd("~/Desktop/SEraster-analyses/")
-
-source("analyses/functions.R")
+source("running_code/functions.R")
 
 library(SpatialExperiment)
 library(Matrix)
@@ -22,6 +17,7 @@ par(mfrow=c(1,1))
 
 ## load cell type annotations
 ct_labels <- read.csv('~/Library/CloudStorage/OneDrive-JohnsHopkins/JEFworks Gohta Aihara/Data/MERFISH_mouseBrain/STalign_celltypeannotations_merfishslices.csv.gz', row.names = 1)
+ct_labels$celltype_cleaned <- gsub("\\(.*?\\)", "", ct_labels$celltype)
 
 slices <- seq(1,3)
 replicates <- seq(1,3)
@@ -107,8 +103,9 @@ for (slice in slices) {
     calculateDensity(gexp_lognorm)
 
 # format into SpatialExperiment class -------------------------------------
-    coldata <- ct_labels_sub[rownames(ct_labels_sub) %in% good_cells,"celltype", drop = FALSE]
+    coldata <- ct_labels_sub[rownames(ct_labels_sub) %in% good_cells, c("celltype", "celltype_cleaned"), drop = FALSE]
     coldata$celltype <- as.factor(coldata$celltype)
+    coldata$celltype_cleaned <- as.factor(coldata$celltype_cleaned)
     
     spe <- SpatialExperiment::SpatialExperiment(
       assays = list(counts = gexp, lognorm = gexp_lognorm),
