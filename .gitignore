@@ -7,3 +7,4 @@ bugs/data/*
 .Rproj.user
 .Rhistory
 crawdad_revision_analysis.Rproj
+.RData
