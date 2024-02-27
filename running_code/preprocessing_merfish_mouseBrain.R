@@ -16,8 +16,8 @@ par(mfrow=c(1,1))
 # Pipeline ------------------------------------------------------------
 
 ## load cell type annotations
-ct_labels <- read.csv('~/Library/CloudStorage/OneDrive-JohnsHopkins/JEFworks Gohta Aihara/Data/MERFISH_mouseBrain/STalign_celltypeannotations_merfishslices.csv.gz', row.names = 1)
-ct_labels$celltype_cleaned <- gsub("\\(.*?\\)", "", ct_labels$celltype)
+# ct_labels <- read.csv('~/Library/CloudStorage/OneDrive-JohnsHopkins/JEFworks Gohta Aihara/Data/MERFISH_mouseBrain/STalign_celltypeannotations_merfishslices.csv.gz', row.names = 1)
+ct_labels <- read.csv('~/Library/CloudStorage/OneDrive-JohnsHopkins/JEFworks Gohta Aihara/Data/MERFISH_mouseBrain/STalign_celltypeannotations_merfishslices_v2.csv.gz', row.names = 1)
 
 slices <- seq(1,3)
 replicates <- seq(1,3)
@@ -103,9 +103,9 @@ for (slice in slices) {
     calculateDensity(gexp_lognorm)
 
 # format into SpatialExperiment class -------------------------------------
-    coldata <- ct_labels_sub[rownames(ct_labels_sub) %in% good_cells, c("celltype", "celltype_cleaned"), drop = FALSE]
+    coldata <- ct_labels_sub[rownames(ct_labels_sub) %in% good_cells, c("celltype", "celltype_merged"), drop = FALSE]
     coldata$celltype <- as.factor(coldata$celltype)
-    coldata$celltype_cleaned <- as.factor(coldata$celltype_cleaned)
+    coldata$celltype_merged <- as.factor(coldata$celltype_merged)
     
     spe <- SpatialExperiment::SpatialExperiment(
       assays = list(counts = gexp, lognorm = gexp_lognorm),
