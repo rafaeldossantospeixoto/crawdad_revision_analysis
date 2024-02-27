@@ -15,7 +15,7 @@ scales <- seq(100, 1000, by=100)
 ## generate background
 shuffle.list <- crawdad:::makeShuffledCells(seq,
                                             scales = scales,
-                                            perms = 3,
+                                            perms = 5,
                                             ncores = ncores,
                                             seed = 1,
                                             verbose = TRUE)

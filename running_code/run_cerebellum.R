@@ -5,6 +5,9 @@ library(tidyverse)
 ncores <- 7
 
 data(slide)
+## it should be aprox 2904 and 2425 microns, not 4628.55 and 3800.465
+max(slide$x) - min(slide$x)
+max(slide$y) - min(slide$y)
 
 ## convert to sf
 slide <- crawdad:::toSF(pos = slide[,c("x", "y")],
@@ -15,7 +18,7 @@ scales <- seq(100, 1000, by=100)
 ## generate background
 shuffle.list <- crawdad:::makeShuffledCells(slide,
                                             scales = scales,
-                                            perms = 3,
+                                            perms = 5,
                                             ncores = ncores,
                                             seed = 1,
                                             verbose = TRUE)
