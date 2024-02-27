@@ -46,3 +46,15 @@ max(slide$x) - min(slide$x) # 4628.55
 max(slide$y) - min(slide$y) # 3800.465
 ## it should be aprox 2904 and 2425 microns, not 4628.55 and 3800.465
 ggplot(slide, aes(x, -y)) + geom_point(size = .1)
+
+## file:///Users/rafaeldossantospeixoto/Library/CloudStorage/OneDrive-JohnsHopkins/jefworks/crawdad/repos/crawdad_revision_analysis/bugs/data/slideseq_cerebellum/aaw1219_rodriques_sm.pdf
+x_res <- 64 / 100 ## to micrometers
+y_res <- 64 / 100 ## to micrometers
+
+slide$x <- slide$x * x_res
+slide$y <- slide$y * y_res
+paste(min(slide$x), max(slide$x), min(slide$y), max(slide$y))
+## "597.011692307692 3559.28380952381 676.715789473683 3109.01333333333"
+paste(max(slide$x) - min(slide$x), max(slide$y) - min(slide$y))
+
+save(slide, file = "bugs/data/slide.rda")
