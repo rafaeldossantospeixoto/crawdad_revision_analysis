@@ -257,6 +257,11 @@ df_auc <- do.call(rbind, lapply(slices, function(slice) {
     }))
   }))
 }))
+# save df_auc
+saveRDS(df_auc, file = here("running_code", "outputs", "merfish_mouseBrain_diff_auc.RDS"))
+# load df_auc
+df_auc <- readRDS(file = here("running_code", "outputs", "merfish_mouseBrain_diff_auc.RDS"))
+
 # compare AUC for each celltype for each pair of datasets
 # create a data.frame of slice and replicate ids
 df_ids <- distinct(df_auc[,c("slice", "replicate")])
@@ -265,6 +270,7 @@ dataset_pairs <- combn(nrow(df_ids), 2)
 # define cell type pairs
 celltype_pairs <- distinct(df_auc[c("neighbor", "reference")])
 
+# plot for each pair
 for (i in seq(ncol(dataset_pairs))) {
   # get slice and replicate ids
   dataset1 <- df_ids[dataset_pairs[1,i],]
@@ -332,12 +338,16 @@ ggplot(df_plt, aes(x = reference, y = neighbor, fill = diff_auc_abs)) +
   theme(axis.text.x = element_text(angle = 90, h = 1))
 ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("diff_auc_abs_ct_cleaned_all_ctpairs.pdf")), width = 20, height = 20, dpi = 300)
 
-## compute p values based on analytical null model
+## select interesting pairs
 # distribution of absolute difference in AUC
 hist(df_plt$diff_auc_abs)
-# reorder based on absolute difference in AUC
-df_plt_reordered
-# analytical null model (hypergeometric distribution?)
+# select top
+threshold <- 6000
+pairs_selected <- distinct(df_plt[df_plt$diff_auc_abs >= threshold,c("reference", "neighbor")])
+pairs_selected <- pairs_selected[complete.cases(pairs_selected),] %>%
+  mutate(reference = as.character(reference),
+         neighbor = as.character(neighbor))
+pairs_selected
 
 # # checking NaN values
 # ## s1r3 vs. s2s1
@@ -499,27 +509,36 @@ for (i in seq(nrow(pairs_selected))) {
 
 ## Figure x (cell type proportion)
 # compute cell type proportion
-df_ct_prop <- do.call(rbind, lapply(slices, function(slice) {
+df_ct_comparison <- do.call(rbind, lapply(slices, function(slice) {
   out <- do.call(rbind, lapply(replicates, function(replicate) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
-    print(paste0("Running CRAWDAD on ", dataset_name))
+    print(dataset_name)
     
     ## load dataset
     spe <- readRDS(file = here("running_code", "processed_data", paste0(dataset_name, ".RDS")))
     
     ## compute the cell type frequency
-    ct_prop <- prop.table(table(spe$celltype_merged))
+    count <- table(spe$celltype_merged)
+    proportion <- prop.table(table(spe$celltype_merged))
+    
+    ## combine count and prop
+    comb <- rownames_to_column(data.frame(cbind(count, proportion)), var = "celltype")
     
     ## format output
-    temp <- data.frame(slice = slice, replicate = replicate, sample = paste0("s", slice, "_r", replicate), ct_prop)
-    colnames(temp) <- c("slice", "replicate", "sample", "celltype", "proportion")
+    temp <- data.frame(slice = slice, replicate = replicate, sample = paste0("s", slice, "_r", replicate), comb)
     
     return(temp)
   }))
 }))
 
 # plot
-ggplot(df_ct_prop, aes(x = sample, y = proportion, fill = celltype)) +
+# count
+ggplot(df_ct_comparison, aes(x = sample, y = count, fill = celltype)) +
+  geom_bar(position = "stack", stat = "identity") +
+  theme_bw()
+
+# proportion
+ggplot(df_ct_comparison, aes(x = sample, y = proportion, fill = celltype)) +
   geom_bar(position = "stack", stat = "identity") +
   theme_bw()
 
