@@ -300,9 +300,88 @@ for (i in seq(ncol(dataset_pairs))) {
   ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("diff_auc_abs_ct_cleaned_", dataset1_name, " vs. ", dataset2_name, ".pdf")), dpi = 300)
 }
 
-# bug fix
-## s1r3 vs. s2s1
-i <- 16
+# combine everything into one plot to standardize the scale
+df_plt <- do.call(rbind, lapply(seq(ncol(dataset_pairs)), function(i) {
+  # get slice and replicate ids
+  dataset1 <- df_ids[dataset_pairs[1,i],]
+  dataset2 <- df_ids[dataset_pairs[2,i],]
+  dataset1_name <- paste0("s", dataset1$slice, "r", dataset1$replicate)
+  dataset2_name <- paste0("s", dataset2$slice, "r", dataset2$replicate)
+  print(paste0(dataset1_name, " vs. ", dataset2_name))
+  
+  # subset to selected datasets
+  df_auc_sub <- df_auc %>%
+    filter((slice == dataset1$slice & replicate == dataset1$replicate) | (slice == dataset2$slice & replicate == dataset2$replicate))
+  
+  # compute difference (absolute value) in auc for each cell type pair between two datasets
+  temp <- do.call(rbind, lapply(seq(nrow(celltype_pairs)), function(j) {
+    out <- df_auc_sub %>%
+      filter(reference == celltype_pairs$reference[j]) %>%
+      filter(neighbor == celltype_pairs$neighbor[j])
+    return(data.frame(dataset1 = dataset1_name, dataset2 = dataset2_name, reference = celltype_pairs$reference[j], neighbor = celltype_pairs$neighbor[j], diff_auc_abs = abs(out$auc[1] - out$auc[2])))
+  }))
+}))
+ggplot(df_plt, aes(x = reference, y = neighbor, fill = diff_auc_abs)) +
+  facet_grid(dataset1 ~ dataset2) +
+  coord_fixed() +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  # scale_x_discrete(position = "top") +
+  labs(fill = "Absolute\ndifference\nin AUC") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, h = 1))
+ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("diff_auc_abs_ct_cleaned_all_ctpairs.pdf")), width = 20, height = 20, dpi = 300)
+
+## compute p values based on analytical null model
+# distribution of absolute difference in AUC
+hist(df_plt$diff_auc_abs)
+# reorder based on absolute difference in AUC
+df_plt_reordered
+# analytical null model (hypergeometric distribution?)
+
+# # checking NaN values
+# ## s1r3 vs. s2s1
+# i <- 16
+# i <- 116
+# slice <- 1
+# replicate <- 3
+# reference <- "Ependymal Cells"
+# neighbor <- "Medium Spiny Neurons"
+# # compute Z score for each scale
+# df_curve <- do.call(rbind, lapply(slices, function(slice) {
+#   out <- do.call(rbind, lapply(replicates, function(replicate) {
+#     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
+#     
+#     findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+#     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
+#     
+#     return(data.frame(slice = slice, replicate = replicate, dat))
+#   }))
+# }))
+# # filter to selected reference, neighbor pair
+# # df_plt <- df_curve %>%
+# #   filter(reference == reference) %>%
+# #   filter(neighbor ==  neighbor)
+# df_plt <- df_curve[(df_curve$neighbor == neighbor) & (df_curve$reference == reference),]
+# # compute error bar
+# df_plt <- df_plt %>%
+#   group_by(slice, replicate, neighbor, scale, reference) %>%
+#   summarise(mean = mean(Z),
+#             sd = sd(Z)) %>%
+#   mutate(slice = factor(slice),
+#          replicate = factor(replicate))
+# 
+# # plot
+# ggplot(df_plt) +
+#   geom_point(aes(x = scale, y = mean, col = slice, shape = replicate)) +
+#   geom_path(aes(x = scale, y = mean, col = slice, shape = replicate)) +
+#   # geom_errorbar(aes(x = scale, ymin = mean-sd, ymax = mean+sd, col = slice), width = 10) +
+#   # geom_hline(yintercept = zsig_mean, color = "black", linetype = "dotted") +
+#   # geom_hline(yintercept = -zsig_mean, color = "black", linetype = "dotted") +
+#   labs(title = paste0("Reference: ", reference, ", Neighbor: ", neighbor),
+#        x = "scale (µm)",
+#        y = "Z") +
+#   theme_bw()
 
 ## Further analysis of cell type colocalizations that differ across datasets
 # choose pair based on a threshold
