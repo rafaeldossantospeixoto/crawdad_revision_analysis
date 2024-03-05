@@ -31,6 +31,8 @@ ncores <- 10
 ct_type <- "cleaned"
 ct_type
 
+n_dist <- 50
+
 for (slice in slices) {
   for (replicate in replicates) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
@@ -53,30 +55,34 @@ for (slice in slices) {
     #                         coms = as.factor(cells$celltypes),
     #                         s = 2)
     
-    ## shuffle cells to create null background
-    shuffle.list <- crawdad:::makeShuffledCells(cells,
-                                                scales = scales,
-                                                perms = 3,
-                                                ncores = ncores,
-                                                seed = 1,
-                                                verbose = TRUE)
-    if (ct_type == "original") {
-      saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
-    } else if (ct_type == "cleaned") {
-      saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells_ct_cleaned.RDS")))
-    }
+    # ## shuffle cells to create null background
+    # shuffle.list <- crawdad:::makeShuffledCells(cells,
+    #                                             scales = scales,
+    #                                             perms = 3,
+    #                                             ncores = ncores,
+    #                                             seed = 1,
+    #                                             verbose = TRUE)
+    # if (ct_type == "original") {
+    #   saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
+    # } else if (ct_type == "cleaned") {
+    #   saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells_ct_cleaned.RDS")))
+    # }
     ## calculate the zscore for the cell-type pairs at different scales
-    ## error: Error in FUN(X[[i]], ...) : object 'neigh.cells' not found
+    if (ct_type == "original") {
+      shuffle.list <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
+    } else if (ct_type == "cleaned") {
+      shuffle.list <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells_ct_cleaned.RDS")))
+    }
     results <- crawdad::findTrends(cells = cells,
-                                   dist = 100,
+                                   dist = n_dist,
                                    shuffle.list = shuffle.list,
                                    ncores = ncores,
                                    verbose = TRUE,
                                    returnMeans = FALSE)
     if (ct_type == "original") {
-      saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends.RDS")))
+      saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends_dist_", n_dist, ".RDS")))
     } else if (ct_type == "cleaned") {
-      saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+      saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned_dist_", n_dist, ".RDS")))
     }
   }
 }

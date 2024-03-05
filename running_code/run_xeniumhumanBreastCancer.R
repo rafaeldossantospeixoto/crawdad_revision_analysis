@@ -30,6 +30,7 @@ ct_labels <- colData(spe)$celltype
 ## based on the tutorial https://jef.works/CRAWDAD/
 
 ## convert dataframe to spatial points (SP)
+
 cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), celltypes = colData(spe)$celltype)
 
 ## visualize
@@ -37,10 +38,12 @@ cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), celltypes = colData
 #                         coms = as.factor(cells$celltypes),
 #                         s = 2)
 
+## define parallelization parameters
+ncores <- parallel::detectCores() - 2
+
 ## define the scales to analyze the data
 scales <- seq(100, 1000, by=100)
 ## shuffle cells to create null background
-ncores <- parallel::detectCores() - 2
 shuffle.list <- crawdad:::makeShuffledCells(cells,
                                             scales = scales,
                                             perms = 3,
@@ -49,14 +52,15 @@ shuffle.list <- crawdad:::makeShuffledCells(cells,
                                             verbose = TRUE)
 saveRDS(shuffle.list, here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
 ## calculate the zscore for the cell-type pairs at different scales
-## error: Error in FUN(X[[i]], ...) : object 'neigh.cells' not found
+n_dist <- 50
+shuffle.list <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_makeShuffledCells.RDS")))
 results <- crawdad::findTrends(cells = cells,
-                               dist = 100,
+                               dist = n_dist,
                                shuffle.list = shuffle.list,
                                ncores = ncores,
                                verbose = TRUE,
                                returnMeans = FALSE)
-saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends.RDS")))
+saveRDS(results, here("running_code", "outputs", paste0(dataset_name, "_findTrends_dist_", n_dist, ".RDS")))
 
 
 # Plot --------------------------------------------------------------------
@@ -85,7 +89,8 @@ ggplot(df, aes(x = x, y = y, col = celltype)) +
 ggsave(filename = here("running_code", "plots", dataset_name, paste0(dataset_name, "_singlecell.pdf")), dpi = 300)
 
 ## Figure x (CRAWDAD summary plots)
-findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends.RDS")))
+n_dist <- 50
+findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_dist_", n_dist, ".RDS")))
 
 dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
 ## calculate the zscore for the multiple-test correction
@@ -96,7 +101,7 @@ zsig <- round(qnorm(psig/2, lower.tail = F), 2)
 vizColocDotplot(dat, zsig.thresh = zsig, zscore.limit = 2*zsig, reorder = TRUE, dot.sizes = c(2, 10)) +
   coord_fixed() +
   theme(axis.text.x = element_text(angle = 35, h = 0))
-ggsave(filename = here("running_code", "plots", dataset_name, paste0(dataset_name, "_summary.pdf")), dpi = 300)
+ggsave(filename = here("running_code", "plots", dataset_name, paste0(dataset_name, "_summary_dist_", n_dist, ".pdf")), dpi = 300)
 
 ## remove unlabeled
 dat_filtered <- dat[!(dat$neighbor == "Unlabeled" | dat$reference == "Unlabeled"),]
@@ -106,7 +111,7 @@ vizColocDotplot(dat_filtered, zsig.thresh = zsig, zscore.limit = 2*zsig, reorder
     axis.text.x = element_text(angle = 90, h = 0),
     legend.position = "bottom"
   )
-ggsave(filename = here("running_code", "plots", dataset_name, paste0(dataset_name, "_summary_unlabeled_removed.pdf")), width = 12, height = 12, dpi = 300)
+ggsave(filename = here("running_code", "plots", dataset_name, paste0(dataset_name, "_summary_unlabeled_removed_dist_", n_dist, ".pdf")), width = 12, height = 12, dpi = 300)
 
 ## Figure x (colocalizations at single-cell)
 
@@ -122,7 +127,8 @@ ggsave(filename = here("running_code", "plots", dataset_name, paste0(dataset_nam
 niches <- list(
   factor(c("DCIS_1", "DCIS_2", "Myoepi_ACTA2+", "Myoepi_KRT15+"), levels = levels(ct_labels)),
   factor(c("Invasive_Tumor", "Prolif_Invasive_Tumor"), levels = levels(ct_labels)),
-  factor(c("B_Cells", "CD4+_T_Cells", "CD8+_T_Cells", "Endothelial", "IRF7+_DCs", "LAMP3+_DCs", "Macrophages_1", "Macrophages_2", "Mast_Cells", "Perivascular-Like", "Stromal", "Stromal_&_T_Cell_Hybrid", "T_Cell_&_Tumor_Hybrid"), levels = levels(ct_labels))
+  factor(c("B_Cells", "CD4+_T_Cells", "CD8+_T_Cells", "Endothelial", "IRF7+_DCs", "LAMP3+_DCs", "Macrophages_1", "Macrophages_2", "Perivascular-Like", "Stromal"), levels = levels(ct_labels)),
+  factor(c("Mast_Cells", "Stromal_&_T_Cell_Hybrid", "T_Cell_&_Tumor_Hybrid"), levels = levels(ct_labels))
 )
 
 for (celltypes in niches) {
