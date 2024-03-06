@@ -98,27 +98,30 @@ spe_s2r1 <- readRDS(file = here("running_code", "processed_data", paste0(paste0(
 col_ct <- gg_color_hue(length(levels(spe_s2r1$celltype_merged)))
 names(col_ct) <- levels(spe_s2r1$celltype_merged)
 
+## set neighborhood distance
+n_dist <- 50
+
 ## Figure x (summary plots)
-## original cell types
-for (slice in slices) {
-  for (replicate in replicates) {
-    dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
-    print(paste0("Plotting CRAWDAD results for ", dataset_name))
-    
-    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends.RDS")))
-    
-    dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
-    ## calculate the zscore for the multiple-test correction
-    ntests <- length(unique(dat$reference)) * length(unique(dat$reference))
-    psig <- 0.05/ntests
-    zsig <- round(qnorm(psig/2, lower.tail = F), 2)
-    ## summary visualization
-    vizColocDotplot(dat, zsig.thresh = zsig, zscore.limit = 2*zsig, dot.sizes = c(2, 8)) +
-      theme(axis.text.x = element_text(angle = 35, h = 0)) +
-      ggtitle(dataset_name)
-    ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0(dataset_name, "_summary.pdf")), width = 12, height = 8, dpi = 300)
-  }
-}
+# ## original cell types
+# for (slice in slices) {
+#   for (replicate in replicates) {
+#     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
+#     print(paste0("Plotting CRAWDAD results for ", dataset_name))
+# 
+#     findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_dist_", n_dist, ".RDS")))
+# 
+#     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
+#     ## calculate the zscore for the multiple-test correction
+#     ntests <- length(unique(dat$reference)) * length(unique(dat$reference))
+#     psig <- 0.05/ntests
+#     zsig <- round(qnorm(psig/2, lower.tail = F), 2)
+#     ## summary visualization
+#     vizColocDotplot(dat, zsig.thresh = zsig, zscore.limit = 2*zsig, dot.sizes = c(2, 8)) +
+#       theme(axis.text.x = element_text(angle = 35, h = 0)) +
+#       ggtitle(dataset_name)
+#     ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("n_dist=", n_dist), paste0(dataset_name, "_summary.pdf")), width = 12, height = 8, dpi = 300)
+#   }
+# }
 
 ## cleaned cell types
 for (slice in slices) {
@@ -126,7 +129,7 @@ for (slice in slices) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
     print(paste0("Plotting CRAWDAD results for ", dataset_name))
     
-    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned_dist_", n_dist, ".RDS")))
     
     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
     ## calculate the zscore for the multiple-test correction
@@ -138,105 +141,105 @@ for (slice in slices) {
     vizColocDotplot(dat, zsig.thresh = zsig, zscore.limit = 2*zsig, reorder = TRUE, dot.sizes = c(2, 8)) +
       theme(axis.text.x = element_text(angle = 35, h = 0)) +
       ggtitle(dataset_name)
-    ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0(dataset_name, "_summary_ct_cleaned.pdf")), width = 12, height = 8, dpi = 300)
+    ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("n_dist=", n_dist), paste0(dataset_name, "_summary_ct_cleaned.pdf")), width = 12, height = 8, dpi = 300)
   }
 }
 
 ## use results with cleaned cell-types to analyze similarities/differences across slices
 
-## Figure x (difference in scale after crossing the significant Z-score threshold)
-# get scale and Z-score that first crossed the significant Z-score threshold
-df <- do.call(rbind, lapply(slices, function(slice) {
-  out <- do.call(rbind, lapply(replicates, function(replicate) {
-    dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
-
-    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
-    dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
-    
-    # calculate the zscore for the multiple-test correction
-    ntests <- length(unique(dat$reference)) * length(unique(dat$reference))
-    psig <- 0.05/ntests
-    zsig <- round(qnorm(psig/2, lower.tail = F), 2)
-    
-    # create data.frame with the Z-scores and scales at the first scale the trend becomes significant
-    # get mean Z
-    mean_dat <- dat %>% 
-      group_by(neighbor, scale, reference) %>% 
-      summarize(Z = mean(Z))
-    # get values before filtering
-    max_scale <- max(dat$scale)
-    u_cts <- unique(dat$reference)
-    # calculate sig z scores
-    sig_dat <- mean_dat %>%
-      filter(abs(Z) >= zsig) %>% 
-      group_by(neighbor, reference) %>% 
-      filter(scale == min(scale, na.rm = TRUE))
-    
-    return(data.frame(slice = slice, replicate = replicate, sig_dat))
-  }))
-}))
-
-# summarize for each pair
-# define cell-type pairs
-ct_pairs <- expand.grid(unique(colData(spe)$celltype_merged), unique(colData(spe)$celltype_merged))
-colnames(ct_pairs) <- c("neighbor", "reference")
-
-# define slice pairs
-slice_pairs <- combn(slices, 2)
-
-df_diff <- do.call(rbind, lapply(seq(nrow(ct_pairs)), function(i) {
-  # subset to chosen neighbor and reference
-  neighbor <- ct_pairs$neighbor[i]
-  reference <- ct_pairs$reference[i]
-  df_sub <- df[df$neighbor == neighbor & df$reference == reference,]
-  
-  # summarize scale and Z-score by slide
-  df_sub <- df[df$neighbor == neighbor & df$reference == reference,] %>%
-    group_by(slice) %>%
-    summarize(
-      scale_mean = mean(scale),
-      Z_mean = mean(Z)
-    )
-  
-  # compute difference in scale between each slide pair
-  out <- do.call(rbind, lapply(seq(dim(slice_pairs)[2]), function(j) {
-    return(data.frame(slice_A = slice_pairs[1,j], slice_B = slice_pairs[2,j], neighbor = neighbor, reference = reference, diff_scale = df_sub$scale_mean[slice_pairs[1,j]] - df_sub$scale_mean[slice_pairs[2,j]], diff_scale_abs = abs(df_sub$scale_mean[slice_pairs[1,j]] - df_sub$scale_mean[slice_pairs[2,j]])))
-  }))
-  return(out)
-}))
-
-# plot difference in scale for each slide pair
-# subtraction
-for (i in seq(dim(slice_pairs)[2])) {
-  df_diff_sub <- df_diff[df_diff$slice_A == slice_pairs[1,i] & df_diff$slice_B == slice_pairs[2,i],]
-  
-  ggplot(df_diff_sub, aes(x = reference, y = neighbor, fill = diff_scale)) +
-    coord_fixed() +
-    geom_tile() +
-    scale_fill_viridis_c() +
-    scale_x_discrete(position = "top") +
-    labs(title = paste0("slice ", slice_pairs[1,i], " - ", "slice ", slice_pairs[2,i]),
-         fill = "Difference\nin scale") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 35, h = 0))
-  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("slice", slice_pairs[1,i], "-", "slice", slice_pairs[2,i], "_diff_scale_ct_cleaned.pdf")), dpi = 300)
-}
-
-# absolute(subtraction)
-for (i in seq(dim(slice_pairs)[2])) {
-  df_diff_sub <- df_diff[df_diff$slice_A == slice_pairs[1,i] & df_diff$slice_B == slice_pairs[2,i],]
-  
-  ggplot(df_diff_sub, aes(x = reference, y = neighbor, fill = diff_scale_abs)) +
-    coord_fixed() +
-    geom_tile() +
-    scale_fill_viridis_c() +
-    scale_x_discrete(position = "top") +
-    labs(title = paste0("|slice ", slice_pairs[1,i], " - ", "slice ", slice_pairs[2,i], "|"),
-         fill = "Absolute\ndifference\nin scale") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 35, h = 0))
-  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("slice", slice_pairs[1,i], "-", "slice", slice_pairs[2,i], "_diff_scale_abs_ct_cleaned.pdf")), dpi = 300)
-}
+# ## Figure x (difference in scale after crossing the significant Z-score threshold)
+# # get scale and Z-score that first crossed the significant Z-score threshold
+# df <- do.call(rbind, lapply(slices, function(slice) {
+#   out <- do.call(rbind, lapply(replicates, function(replicate) {
+#     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
+# 
+#     findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+#     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
+#     
+#     # calculate the zscore for the multiple-test correction
+#     ntests <- length(unique(dat$reference)) * length(unique(dat$reference))
+#     psig <- 0.05/ntests
+#     zsig <- round(qnorm(psig/2, lower.tail = F), 2)
+#     
+#     # create data.frame with the Z-scores and scales at the first scale the trend becomes significant
+#     # get mean Z
+#     mean_dat <- dat %>% 
+#       group_by(neighbor, scale, reference) %>% 
+#       summarize(Z = mean(Z))
+#     # get values before filtering
+#     max_scale <- max(dat$scale)
+#     u_cts <- unique(dat$reference)
+#     # calculate sig z scores
+#     sig_dat <- mean_dat %>%
+#       filter(abs(Z) >= zsig) %>% 
+#       group_by(neighbor, reference) %>% 
+#       filter(scale == min(scale, na.rm = TRUE))
+#     
+#     return(data.frame(slice = slice, replicate = replicate, sig_dat))
+#   }))
+# }))
+# 
+# # summarize for each pair
+# # define cell-type pairs
+# ct_pairs <- expand.grid(unique(colData(spe)$celltype_merged), unique(colData(spe)$celltype_merged))
+# colnames(ct_pairs) <- c("neighbor", "reference")
+# 
+# # define slice pairs
+# slice_pairs <- combn(slices, 2)
+# 
+# df_diff <- do.call(rbind, lapply(seq(nrow(ct_pairs)), function(i) {
+#   # subset to chosen neighbor and reference
+#   neighbor <- ct_pairs$neighbor[i]
+#   reference <- ct_pairs$reference[i]
+#   df_sub <- df[df$neighbor == neighbor & df$reference == reference,]
+#   
+#   # summarize scale and Z-score by slide
+#   df_sub <- df[df$neighbor == neighbor & df$reference == reference,] %>%
+#     group_by(slice) %>%
+#     summarize(
+#       scale_mean = mean(scale),
+#       Z_mean = mean(Z)
+#     )
+#   
+#   # compute difference in scale between each slide pair
+#   out <- do.call(rbind, lapply(seq(dim(slice_pairs)[2]), function(j) {
+#     return(data.frame(slice_A = slice_pairs[1,j], slice_B = slice_pairs[2,j], neighbor = neighbor, reference = reference, diff_scale = df_sub$scale_mean[slice_pairs[1,j]] - df_sub$scale_mean[slice_pairs[2,j]], diff_scale_abs = abs(df_sub$scale_mean[slice_pairs[1,j]] - df_sub$scale_mean[slice_pairs[2,j]])))
+#   }))
+#   return(out)
+# }))
+# 
+# # plot difference in scale for each slide pair
+# # subtraction
+# for (i in seq(dim(slice_pairs)[2])) {
+#   df_diff_sub <- df_diff[df_diff$slice_A == slice_pairs[1,i] & df_diff$slice_B == slice_pairs[2,i],]
+#   
+#   ggplot(df_diff_sub, aes(x = reference, y = neighbor, fill = diff_scale)) +
+#     coord_fixed() +
+#     geom_tile() +
+#     scale_fill_viridis_c() +
+#     scale_x_discrete(position = "top") +
+#     labs(title = paste0("slice ", slice_pairs[1,i], " - ", "slice ", slice_pairs[2,i]),
+#          fill = "Difference\nin scale") +
+#     theme_bw() +
+#     theme(axis.text.x = element_text(angle = 35, h = 0))
+#   ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("slice", slice_pairs[1,i], "-", "slice", slice_pairs[2,i], "_diff_scale_ct_cleaned.pdf")), dpi = 300)
+# }
+# 
+# # absolute(subtraction)
+# for (i in seq(dim(slice_pairs)[2])) {
+#   df_diff_sub <- df_diff[df_diff$slice_A == slice_pairs[1,i] & df_diff$slice_B == slice_pairs[2,i],]
+#   
+#   ggplot(df_diff_sub, aes(x = reference, y = neighbor, fill = diff_scale_abs)) +
+#     coord_fixed() +
+#     geom_tile() +
+#     scale_fill_viridis_c() +
+#     scale_x_discrete(position = "top") +
+#     labs(title = paste0("|slice ", slice_pairs[1,i], " - ", "slice ", slice_pairs[2,i], "|"),
+#          fill = "Absolute\ndifference\nin scale") +
+#     theme_bw() +
+#     theme(axis.text.x = element_text(angle = 35, h = 0))
+#   ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("slice", slice_pairs[1,i], "-", "slice", slice_pairs[2,i], "_diff_scale_abs_ct_cleaned.pdf")), dpi = 300)
+# }
 
 ## Figure x (difference in area under the scale vs. Z-score curves)
 # compute AUC for each scale vs. Z-score curves from each dataset 
@@ -245,7 +248,7 @@ df_auc <- do.call(rbind, lapply(slices, function(slice) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
     
     # format data
-    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned_dist_", n_dist, ".RDS")))
     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
     
     # define pairs
@@ -264,9 +267,9 @@ df_auc <- do.call(rbind, lapply(slices, function(slice) {
   }))
 }))
 # save df_auc
-saveRDS(df_auc, file = here("running_code", "outputs", "merfish_mouseBrain_diff_auc.RDS"))
+saveRDS(df_auc, file = here("running_code", "outputs", paste0("merfish_mouseBrain_diff_auc_dist_", n_dist, ".RDS")))
 # load df_auc
-df_auc <- readRDS(file = here("running_code", "outputs", "merfish_mouseBrain_diff_auc.RDS"))
+df_auc <- readRDS(file = here("running_code", "outputs", paste0("merfish_mouseBrain_diff_auc_dist_", n_dist, ".RDS")))
 
 # compare AUC for each celltype for each pair of datasets
 # create a data.frame of slice and replicate ids
@@ -276,41 +279,41 @@ dataset_pairs <- combn(nrow(df_ids), 2)
 # define cell type pairs
 celltype_pairs <- distinct(df_auc[c("neighbor", "reference")])
 
-# plot for each pair
-for (i in seq(ncol(dataset_pairs))) {
-  # get slice and replicate ids
-  dataset1 <- df_ids[dataset_pairs[1,i],]
-  dataset2 <- df_ids[dataset_pairs[2,i],]
-  dataset1_name <- paste0("s", dataset1$slice, "r", dataset1$replicate)
-  dataset2_name <- paste0("s", dataset2$slice, "r", dataset2$replicate)
-  print(paste0(dataset1_name, " vs. ", dataset2_name))
-  
-  # subset to selected datasets
-  df_auc_sub <- df_auc %>%
-    filter((slice == dataset1$slice & replicate == dataset1$replicate) | (slice == dataset2$slice & replicate == dataset2$replicate))
-  
-  # compute difference (absolute value) in auc for each cell type pair between two datasets
-  df_plt <- do.call(rbind, lapply(seq(nrow(celltype_pairs)), function(j) {
-    out <- df_auc_sub %>%
-      filter(reference == celltype_pairs$reference[j]) %>%
-      filter(neighbor == celltype_pairs$neighbor[j])
-    return(data.frame(reference = celltype_pairs$reference[j], neighbor = celltype_pairs$neighbor[j], diff_auc_abs = abs(out$auc[1] - out$auc[2])))
-  }))
-  
-  # plot
-  ggplot(df_plt, aes(x = reference, y = neighbor, fill = diff_auc_abs)) +
-    coord_fixed() +
-    geom_tile() +
-    scale_fill_viridis_c() +
-    scale_x_discrete(position = "top") +
-    labs(title = paste0(dataset1_name, " vs. ", dataset2_name),
-         fill = "Absolute\ndifference\nin AUC") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 35, h = 0))
-  
-  # save
-  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("diff_auc_abs_ct_cleaned_", dataset1_name, " vs. ", dataset2_name, ".pdf")), dpi = 300)
-}
+# # plot for each pair
+# for (i in seq(ncol(dataset_pairs))) {
+#   # get slice and replicate ids
+#   dataset1 <- df_ids[dataset_pairs[1,i],]
+#   dataset2 <- df_ids[dataset_pairs[2,i],]
+#   dataset1_name <- paste0("s", dataset1$slice, "r", dataset1$replicate)
+#   dataset2_name <- paste0("s", dataset2$slice, "r", dataset2$replicate)
+#   print(paste0(dataset1_name, " vs. ", dataset2_name))
+#   
+#   # subset to selected datasets
+#   df_auc_sub <- df_auc %>%
+#     filter((slice == dataset1$slice & replicate == dataset1$replicate) | (slice == dataset2$slice & replicate == dataset2$replicate))
+#   
+#   # compute difference (absolute value) in auc for each cell type pair between two datasets
+#   df_plt <- do.call(rbind, lapply(seq(nrow(celltype_pairs)), function(j) {
+#     out <- df_auc_sub %>%
+#       filter(reference == celltype_pairs$reference[j]) %>%
+#       filter(neighbor == celltype_pairs$neighbor[j])
+#     return(data.frame(reference = celltype_pairs$reference[j], neighbor = celltype_pairs$neighbor[j], diff_auc_abs = abs(out$auc[1] - out$auc[2])))
+#   }))
+#   
+#   # plot
+#   ggplot(df_plt, aes(x = reference, y = neighbor, fill = diff_auc_abs)) +
+#     coord_fixed() +
+#     geom_tile() +
+#     scale_fill_viridis_c() +
+#     scale_x_discrete(position = "top") +
+#     labs(title = paste0(dataset1_name, " vs. ", dataset2_name),
+#          fill = "Absolute\ndifference\nin AUC") +
+#     theme_bw() +
+#     theme(axis.text.x = element_text(angle = 35, h = 0))
+#   
+#   # save
+#   ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("diff_auc_abs_ct_cleaned_", dataset1_name, " vs. ", dataset2_name, ".pdf")), dpi = 300)
+# }
 
 # combine everything into one plot to standardize the scale
 df_plt <- do.call(rbind, lapply(seq(ncol(dataset_pairs)), function(i) {
@@ -342,13 +345,13 @@ ggplot(df_plt, aes(x = reference, y = neighbor, fill = diff_auc_abs)) +
   labs(fill = "Absolute\ndifference\nin AUC") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, h = 1))
-ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("diff_auc_abs_ct_cleaned_all_ctpairs.pdf")), width = 20, height = 20, dpi = 300)
+ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("n_dist=", n_dist), paste0("diff_auc_abs_ct_cleaned_all_ctpairs.pdf")), width = 20, height = 20, dpi = 300)
 
 ## select interesting pairs
 # distribution of absolute difference in AUC
 hist(df_plt$diff_auc_abs)
 # select top
-threshold <- 6000
+threshold <- 8000
 pairs_selected <- distinct(df_plt[df_plt$diff_auc_abs >= threshold,c("reference", "neighbor")])
 pairs_selected <- pairs_selected[complete.cases(pairs_selected),] %>%
   mutate(reference = as.character(reference),
@@ -400,12 +403,12 @@ pairs_selected
 #   theme_bw()
 
 ## Further analysis of cell type colocalizations that differ across datasets
-# choose pair based on a threshold
-diff_threshold <- 200
-# df_diff_sub <- na.omit(df_diff[df_diff$diff_scale >= diff_threshold,])
-df_diff_sub <- na.omit(df_diff[df_diff$diff_scale_abs >= diff_threshold,])
-df_diff_sub
-pairs_selected <- distinct(df_diff_sub[c("neighbor", "reference")])
+# # choose pair based on a threshold
+# diff_threshold <- 200
+# # df_diff_sub <- na.omit(df_diff[df_diff$diff_scale >= diff_threshold,])
+# df_diff_sub <- na.omit(df_diff[df_diff$diff_scale_abs >= diff_threshold,])
+# df_diff_sub
+# pairs_selected <- distinct(df_diff_sub[c("neighbor", "reference")])
 
 ## Figure x (validation with scale vs. Z curve)
 # compute Z score for each scale
@@ -413,7 +416,7 @@ df_curve <- do.call(rbind, lapply(slices, function(slice) {
   out <- do.call(rbind, lapply(replicates, function(replicate) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
     
-    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned_dist_", n_dist, ".RDS")))
     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
     
     return(data.frame(slice = slice, replicate = replicate, dat))
@@ -424,7 +427,7 @@ df_zsig <- do.call(rbind, lapply(slices, function(slice) {
   out <- do.call(rbind, lapply(replicates, function(replicate) {
     dataset_name <- paste0("merfish_mouseBrain_s", slice, "_r", replicate)
     
-    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned.RDS")))
+    findTrends_results <- readRDS(here("running_code", "outputs", paste0(dataset_name, "_findTrends_ct_cleaned_dist_", n_dist, ".RDS")))
     dat <- crawdad::meltResultsList(findTrends_results, withPerms = TRUE)
     
     ## calculate the zscore for the multiple-test correction
@@ -464,7 +467,7 @@ for (i in seq(nrow(pairs_selected))) {
   # save
   reference_label <- gsub("/", "-", pairs_selected$reference[i])
   neighbor_label <- gsub("/", "-", pairs_selected$neighbor[i])
-  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("merfish_mouseBrain_scale_vs_Zscore_reference_", reference_label, "_neighbor_", neighbor_label, ".png")))
+  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("n_dist=", n_dist), paste0("merfish_mouseBrain_scale_vs_Zscore_reference_", reference_label, "_neighbor_", neighbor_label, ".png")))
 }
 
 ## Figure x (validation with single-cell visualization)
@@ -510,7 +513,7 @@ for (i in seq(nrow(pairs_selected))) {
   # save
   reference_label <- gsub("/", "-", pairs_selected$reference[i])
   neighbor_label <- gsub("/", "-", pairs_selected$neighbor[i])
-  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("merfish_mouseBrain_singlecell_reference_", reference_label, "_neighbor_", neighbor_label, ".png")), width = 10, height = 8, dpi = 300)
+  ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", paste0("n_dist=", n_dist), paste0("merfish_mouseBrain_singlecell_reference_", reference_label, "_neighbor_", neighbor_label, ".png")), width = 10, height = 8, dpi = 300)
 }
 
 ## Figure x (cell type proportion)
@@ -542,11 +545,13 @@ df_ct_comparison <- do.call(rbind, lapply(slices, function(slice) {
 ggplot(df_ct_comparison, aes(x = sample, y = count, fill = celltype)) +
   geom_bar(position = "stack", stat = "identity") +
   theme_bw()
+ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", "merfish_mouseBrain_counts_comparison.pdf"), dpi = 300)
 
 # proportion
 ggplot(df_ct_comparison, aes(x = sample, y = proportion, fill = celltype)) +
   geom_bar(position = "stack", stat = "identity") +
   theme_bw()
+ggsave(filename = here("running_code", "plots", "merfish_mouseBrain", "merfish_mouseBrain_proportion_comparison.pdf"), dpi = 300)
 
 # which cell types are missing from slice 1
 spe_s1 <- readRDS(file = here("running_code", "processed_data", paste0(paste0("merfish_mouseBrain_s", 1, "_r", 1), ".RDS")))
