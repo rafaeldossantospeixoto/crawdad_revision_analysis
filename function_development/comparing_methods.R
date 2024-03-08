@@ -13,50 +13,57 @@ dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>%
 
 zsig <- correctZBonferroni(dat_50)
 
+data(sim)
+cells <- crawdad::toSF(pos = sim[,c("x", "y")], celltypes = sim$celltypes)
+p <- vizClusters(cells)
+p
+pdf('function_development/comparing_methods/paper_figures/sim_viz.pdf')
+p
+dev.off()
 
 ## Visualize specific pairs ------------------------------------------------
 
-## B and C
-dat_sp %>% 
-  filter(reference == 'B') %>% 
-  filter(neighbor == 'C') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
-dat_50 %>% 
-  group_by(reference, neighbor, scale) %>% 
-  summarize(Z = mean(Z)) %>% 
-  filter(reference == 'B') %>% 
-  filter(neighbor == 'C') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
-
-## D and C
-dat_sp %>% 
-  filter(reference == 'D') %>% 
-  filter(neighbor == 'C') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
-dat_50 %>% 
-  group_by(reference, neighbor, scale) %>% 
-  summarize(Z = mean(Z)) %>% 
-  filter(reference == 'D') %>% 
-  filter(neighbor == 'C') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
-
-## A and C
-dat_sp %>% 
-  filter(reference == 'A') %>% 
-  filter(neighbor == 'C') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
-dat_50 %>% 
-  group_by(reference, neighbor, scale) %>% 
-  summarize(Z = mean(Z)) %>% 
-  filter(reference == 'A') %>% 
-  filter(neighbor == 'C') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
+# ## B and C
+# dat_sp %>% 
+#   filter(reference == 'B') %>% 
+#   filter(neighbor == 'C') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=distance, y=probability))
+# dat_50 %>% 
+#   group_by(reference, neighbor, scale) %>% 
+#   summarize(Z = mean(Z)) %>% 
+#   filter(reference == 'B') %>% 
+#   filter(neighbor == 'C') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z))
+# 
+# ## D and C
+# dat_sp %>% 
+#   filter(reference == 'D') %>% 
+#   filter(neighbor == 'C') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=distance, y=probability))
+# dat_50 %>% 
+#   group_by(reference, neighbor, scale) %>% 
+#   summarize(Z = mean(Z)) %>% 
+#   filter(reference == 'D') %>% 
+#   filter(neighbor == 'C') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z))
+# 
+# ## A and C
+# dat_sp %>% 
+#   filter(reference == 'A') %>% 
+#   filter(neighbor == 'C') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=distance, y=probability))
+# dat_50 %>% 
+#   group_by(reference, neighbor, scale) %>% 
+#   summarize(Z = mean(Z)) %>% 
+#   filter(reference == 'A') %>% 
+#   filter(neighbor == 'C') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z))
 
 
 
@@ -77,12 +84,12 @@ reference_ct <- 'B'
 ## CRAWDAD
 p <- dat_50 %>% 
   filter(reference == reference_ct) %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
-  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  # mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  # mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=scale, y=Z, group = neighbor, color = neighbor), 
             size = .5) +
-  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  scale_color_manual(name = 'Neighbor', values = rainbow(4)) +
   ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.3, linetype = "dashed") + 
   ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
   labs(title = 'CRAWDAD') + 
@@ -95,12 +102,12 @@ dev.off()
 ## Squidpy
 p <- dat_sp %>% 
   filter(reference == reference_ct) %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
-  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  # mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  # mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = neighbor), 
             size = .5) +
-  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  scale_color_manual(name = 'Neighbor', values = rainbow(4)) +
   labs(title = 'Squidpy Co-occurrence') + 
   theme_bw()
 p
@@ -111,13 +118,13 @@ dev.off()
 ## Ripleys
 p <- dat_rk %>% 
   filter(reference == reference_ct) %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
-  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  # mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  # mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=radius, y=score, group = neighbor, color = selected_neighbor), 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = neighbor), 
             size = .5) +
   ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
-  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  scale_color_manual(name = 'Neighbor', values = rainbow(4)) +
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
 p
@@ -139,41 +146,56 @@ dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>%
 
 zsig <- correctZBonferroni(dat_50)
 
+# data(slide)
+# cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
+# p <- vizClusters(cells)
+# p
+# pdf('function_development/comparing_methods/paper_figures/cerebellum_viz.pdf')
+# p
+# dev.off()
+# 
+# data(slide)
+# cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
+# p <- vizClusters(cells, ofInterest = c('Purkinje', 'Bergmann', 'Oligodendrocytes'))
+# p
+# pdf('function_development/comparing_methods/paper_figures/cerebellum_viz_selected.pdf')
+# p
+# dev.off()
 
 ## Visualize specific pairs ------------------------------------------------
 
-## Purkinje and Bergmann
-dat_sp %>% 
-  filter(reference == 'Purkinje') %>% 
-  filter(neighbor == 'Bergmann') %>% 
-  ggplot() + 
-  geom_line(aes(x=distance, y=probability))
-
-dat_rk %>% 
-  filter(reference == 'Purkinje') %>% 
-  filter(neighbor == 'Bergmann') %>% 
-  ggplot() + 
-  geom_line(aes(x=distance, y=score))
-
-dat_50 %>% 
-  filter(reference == 'Purkinje') %>% 
-  filter(neighbor == 'Bergmann') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z)) +
-  ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.6, linetype = "dotted")
-
-## Astrocytes and Microglia
-dat_sp %>% 
-  filter(reference == 'Astrocytes') %>% 
-  filter(neighbor == 'Microglia') %>% 
-  ggplot() + 
-  geom_line(aes(x=distance, y=probability))
-
-dat_50 %>% 
-  filter(reference == 'Astrocytes') %>% 
-  filter(neighbor == 'Microglia') %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z))
+# ## Purkinje and Bergmann
+# dat_sp %>% 
+#   filter(reference == 'Purkinje') %>% 
+#   filter(neighbor == 'Bergmann') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=distance, y=probability))
+# 
+# dat_rk %>% 
+#   filter(reference == 'Purkinje') %>% 
+#   filter(neighbor == 'Bergmann') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=radius, y=score))
+# 
+# dat_50 %>% 
+#   filter(reference == 'Purkinje') %>% 
+#   filter(neighbor == 'Bergmann') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z)) +
+#   ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.6, linetype = "dotted")
+# 
+# ## Astrocytes and Microglia
+# dat_sp %>% 
+#   filter(reference == 'Astrocytes') %>% 
+#   filter(neighbor == 'Microglia') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=distance, y=probability))
+# 
+# dat_50 %>% 
+#   filter(reference == 'Astrocytes') %>% 
+#   filter(neighbor == 'Microglia') %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z))
 
 
 ## Highlight specific pairs ------------------------------------------------
@@ -189,36 +211,36 @@ ordered_colors <- setNames(all_colors, ordered_cts)
 
 ### Different plots -------------------------------------------------------
 
-## all cells in legend
-dat_50 %>% 
-  filter(reference == 'Purkinje') %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z, color = neighbor)) +
-  scale_color_manual(values = ordered_colors) +
-  theme_bw()
-
-## selected cells in legend
-dat_50 %>% 
-  filter(reference == 'Purkinje') %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
-  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
-  ggplot() + 
-  geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_neighbor), 
-            size = .5) +
-  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
-  scale_size_manual(name = 'Neighbor', values = c(.5, .5, 3)) +
-  theme_bw()
-
-## highlighting one of them
-dat_50 %>% 
-  filter(reference == 'Purkinje') %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
-  ggplot(aes(x = scale, y = Z)) + 
-  geom_line(aes(colour = neighbor == "Bergmann", size = neighbor == "Bergmann", group = neighbor)) +
-  scale_color_manual(name = "neighbor", labels = c("Other", "Bergmann"), values = c("gray", "red")) +
-  scale_size_manual(name = "neighbor", labels = c("Other", "Bergmann"), values = c(0.5, 1)) +
-  theme_bw()
+# ## all cells in legend
+# dat_50 %>% 
+#   filter(reference == 'Purkinje') %>% 
+#   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z, color = neighbor)) +
+#   scale_color_manual(values = ordered_colors) +
+#   theme_bw()
+# 
+# ## selected cells in legend
+# dat_50 %>% 
+#   filter(reference == 'Purkinje') %>% 
+#   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+#   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+#   ggplot() + 
+#   geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_neighbor), 
+#             size = .5) +
+#   scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+#   scale_size_manual(name = 'Neighbor', values = c(.5, .5, 3)) +
+#   theme_bw()
+# 
+# ## highlighting one of them
+# dat_50 %>% 
+#   filter(reference == 'Purkinje') %>% 
+#   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+#   ggplot(aes(x = scale, y = Z)) + 
+#   geom_line(aes(colour = neighbor == "Bergmann", size = neighbor == "Bergmann", group = neighbor)) +
+#   scale_color_manual(name = "neighbor", labels = c("Other", "Bergmann"), values = c("gray", "red")) +
+#   scale_size_manual(name = "neighbor", labels = c("Other", "Bergmann"), values = c(0.5, 1)) +
+#   theme_bw()
 
 
 ### Save plots --------------------------------------------------------------
@@ -283,6 +305,22 @@ dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>%
   summarize(Z = mean(Z))
 
 zsig <- correctZBonferroni(dat_50)
+
+# data(seq)
+# cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
+# p <- vizClusters(cells)
+# p
+# pdf('function_development/comparing_methods/paper_figures/embryo_viz.pdf')
+# p
+# dev.off()
+# 
+# data(seq)
+# cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
+# p <- vizClusters(cells, ofInterest = c('Endothelium', 'Spinal cord','Haematoendothelial progenitors'))
+# p
+# pdf('function_development/comparing_methods/paper_figures/embryo_viz_selected.pdf')
+# p
+# dev.off()
 
 
 ## Highlight Endothelium ------------------------------------------------
