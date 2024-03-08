@@ -11,24 +11,24 @@ data(sim)
 sim <- crawdad:::toSF(pos = sim[,c("x", "y")],
                       celltypes = sim$celltypes)
 
-scales <- seq(100, 1000, by=100)
+scales <- seq(100, 1000, by=50)
 
 ## generate background
 shuffle.list <- crawdad:::makeShuffledCells(sim,
                                             scales = scales,
-                                            perms = 5,
+                                            perms = 10,
                                             ncores = ncores,
                                             seed = 1,
                                             verbose = TRUE)
 
-## find trends, dist 100
-results_100 <- crawdad::findTrends(sim,
-                                   dist = 100,
-                                   shuffle.list = shuffle.list,
-                                   ncores = ncores,
-                                   verbose = TRUE,
-                                   returnMeans = FALSE)
-dat_100 <- crawdad::meltResultsList(results_100, withPerms = T)
+# ## find trends, dist 100
+# results_100 <- crawdad::findTrends(sim,
+#                                    dist = 100,
+#                                    shuffle.list = shuffle.list,
+#                                    ncores = ncores,
+#                                    verbose = TRUE,
+#                                    returnMeans = FALSE)
+# dat_100 <- crawdad::meltResultsList(results_100, withPerms = T)
 
 ## find trends, dist 50
 results_50 <- crawdad::findTrends(sim,
@@ -41,21 +41,71 @@ dat_50 <- crawdad::meltResultsList(results_50, withPerms = T)
 saveRDS(dat_50, 'running_code/processed_data/dat_sim_50.RDS')
 
 ## multiple-test correction
-ntests <- length(unique(dat_100$reference)) * length(unique(dat_100$reference))
+ntests <- length(unique(dat_50$reference)) * length(unique(dat_50$reference))
 psig <- 0.05/ntests
 zsig <- round(qnorm(psig/2, lower.tail = F), 2)
 
-## viz 100
-vizColocDotplot(dat_100, reorder = F, 
-                zsig.thresh = zsig, zscore.limit = zsig*2,
-                dot.sizes = c(10, 40)) +
-  theme(legend.position='right',
-        axis.text.x = element_text(angle = 45, h = 0))
+## viz 50
 vizColocDotplot(dat_50, reorder = F, 
                 zsig.thresh = zsig, zscore.limit = zsig*2,
                 dot.sizes = c(10, 40)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
+
+
+
+# Paper figures -----------------------------------------------------------
+
+dat_50 <- readRDS('running_code/processed_data/dat_sim_50.RDS')
+
+zsig <- correctZBonferroni(dat_50)
+vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, 
+                zscore.limit = zsig*2, 
+                dot.sizes = c(2, 14)) +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
+
+
+
+## Dotplot -----------------------------------------------------------------
+
+p <- vizColocDotplot(dat_50, reorder = F, 
+                     zsig.thresh = zsig, zscore.limit = zsig*2,
+                     dot.sizes = c(5, 20)) +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
+p
+pdf('running_code/paper_figures/sim_dotplot_crawdad.pdf',
+    height = 4, width = 5)
+p
+dev.off()
+
+
+
+## Trends ------------------------------------------------------------------
+
+p <- dat_50 %>% 
+  filter(reference == 'C') %>% 
+  filter(neighbor == 'B') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
+p
+pdf('running_code/paper_figures/sim_trend_refC_neighB_crawdad.pdf',
+    height = 4, width = 5)
+p
+dev.off()
+
+p <- dat_50 %>% 
+  filter(reference == 'A') %>% 
+  filter(neighbor == 'B') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
+p
+pdf('running_code/paper_figures/sim_trend_refA_neighB_crawdad.pdf',
+    height = 4, width = 5)
+p
+dev.off()
+
+
+# Compare -----------------------------------------------------------------
 
 dat1 <- dat_100
 dat2 <- dat_50
