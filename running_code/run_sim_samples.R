@@ -72,8 +72,8 @@ vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig,
 p <- vizColocDotplot(dat_50, reorder = F, 
                      zsig.thresh = zsig, zscore.limit = zsig*2,
                      dot.sizes = c(5, 20)) +
-  theme(legend.position='right',
-        axis.text.x = element_text(angle = 45, h = 0))
+  theme(legend.position='bottom',
+        axis.text.x = element_text(vjust = 1))
 p
 pdf('running_code/paper_figures/sim_dotplot_crawdad.pdf',
     height = 4, width = 5)
@@ -100,6 +100,26 @@ p <- dat_50 %>%
   vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
 p
 pdf('running_code/paper_figures/sim_trend_refA_neighB_crawdad.pdf',
+    height = 4, width = 5)
+p
+dev.off()
+
+p <- dat_50 %>% 
+  filter(reference == 'B') %>% 
+  filter(neighbor == 'C') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
+p
+pdf('running_code/paper_figures/sim_trend_refB_neighC_crawdad.pdf',
+    height = 4, width = 5)
+p
+dev.off()
+
+p <- dat_50 %>% 
+  filter(reference == 'B') %>% 
+  filter(neighbor == 'A') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
+p
+pdf('running_code/paper_figures/sim_trend_refB_neighA_crawdad.pdf',
     height = 4, width = 5)
 p
 dev.off()
