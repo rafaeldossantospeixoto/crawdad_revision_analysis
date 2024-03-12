@@ -82,4 +82,15 @@ shuffle.list <- crawdad:::makeShuffledCells(cells,
                                             seed = 1,
                                             verbose = TRUE)
 ## Time was 24.92 mins
-saveRDS(shuffle.list, 'tmp/shufflelist.RDS')
+
+## changed distance to 50
+results <- crawdad::findTrends(cells,
+                               dist = 50,
+                               shuffle.list = shuffle.list,
+                               ncores = ncores,
+                               verbose = TRUE,
+                               returnMeans = FALSE)
+## Time was 607.45 mins
+
+dat <- crawdad::meltResultsList(results, withPerms = TRUE)
+saveRDS(dat, 'running_code/processed_data/dat_xxcd_50.RDS')
