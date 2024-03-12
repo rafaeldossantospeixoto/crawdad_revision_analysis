@@ -4,7 +4,7 @@ library(tidyverse)
 
 # Sim ---------------------------------------------------------------------
 
-dat_sp <- read.csv('running_code/squidpy/dat_sim_squidpy.csv', row.names = 1)
+dat_sp <- read.csv('running_code/squidpy/results_data/dat_sim_squidpy.csv', row.names = 1)
 dat_50 <- readRDS('running_code/processed_data/dat_sim_50.RDS')
 dat_rk <- readRDS('running_code/processed_data/dat_sim_ripleys.RDS')
 
@@ -95,7 +95,8 @@ p <- dat_50 %>%
   labs(title = 'CRAWDAD') + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/sim_crawdad.pdf')
+pdf('function_development/comparing_methods/paper_figures/sim_crawdad.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -111,7 +112,8 @@ p <- dat_sp %>%
   labs(title = 'Squidpy Co-occurrence') + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/sim_squidpy.pdf')
+pdf('function_development/comparing_methods/paper_figures/sim_squidpy.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -128,7 +130,8 @@ p <- dat_rk %>%
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/sim_ripleys.pdf')
+pdf('function_development/comparing_methods/paper_figures/sim_ripleys.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -137,7 +140,7 @@ dev.off()
 
 # Slide -------------------------------------------------------------------
 
-dat_sp <- read.csv('running_code/squidpy/dat_slide_squidpy.csv', row.names = 1)
+dat_sp <- read.csv('running_code/squidpy/results_data/dat_slide_squidpy.csv', row.names = 1)
 dat_50 <- readRDS('running_code/processed_data/dat_slide_50.RDS')
 dat_rk <- readRDS('running_code/processed_data/dat_cerebellum_ripleys.RDS')
 
@@ -258,7 +261,8 @@ p <- dat_50 %>%
   ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
   labs(title = 'CRAWDAD') + 
   theme_bw()
-pdf('function_development/comparing_methods/paper_figures/cerebellum_crawdad.pdf')
+pdf('function_development/comparing_methods/paper_figures/cerebellum_crawdad.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -274,7 +278,8 @@ p <- dat_sp %>%
   labs(title = 'Squidpy Co-occurrence') + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/cerebellum_squidpy.pdf')
+pdf('function_development/comparing_methods/paper_figures/cerebellum_squidpy.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -291,14 +296,15 @@ p <- dat_rk %>%
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/cerebellum_ripleys.pdf')
+pdf('function_development/comparing_methods/paper_figures/cerebellum_ripleys.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
 
 # Seq -------------------------------------------------------------------
 
-dat_sp <- read.csv('running_code/squidpy/dat_seq_squidpy.csv', row.names = 1)
+dat_sp <- read.csv('running_code/squidpy/results_data/dat_seq_squidpy.csv', row.names = 1)
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>% 
@@ -352,9 +358,11 @@ p <- dat_50 %>%
   ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
   labs(title = 'CRAWDAD') + 
   theme_bw()
+p
 pdf(paste0('function_development/comparing_methods/paper_figures/embryo_crawdad_',
            sub(" ", "_", reference_ct),
-           ".pdf"))
+           ".pdf"), 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -372,7 +380,8 @@ p <- dat_sp %>%
 p
 pdf(paste0('function_development/comparing_methods/paper_figures/embryo_squidpy_',
            sub(" ", "_", reference_ct),
-           ".pdf"))
+           ".pdf"), 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -391,7 +400,8 @@ p <- dat_rk %>%
 p
 pdf(paste0('function_development/comparing_methods/paper_figures/embryo_ripleys_',
            sub(" ", "_", reference_ct),
-           ".pdf"))
+           ".pdf"), 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -427,7 +437,8 @@ p <- dat_50 %>%
   theme_bw()
 pdf(paste0('function_development/comparing_methods/paper_figures/embryo_crawdad_',
            sub(" ", "_", reference_ct),
-           ".pdf"))
+           ".pdf"), 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -445,7 +456,8 @@ p <- dat_sp %>%
 p
 pdf(paste0('function_development/comparing_methods/paper_figures/embryo_squidpy_',
            sub(" ", "_", reference_ct),
-           ".pdf"))
+           ".pdf"), 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -464,7 +476,8 @@ p <- dat_rk %>%
 p
 pdf(paste0('function_development/comparing_methods/paper_figures/embryo_ripleys_',
            sub(" ", "_", reference_ct),
-           ".pdf"))
+           ".pdf"), 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -519,7 +532,8 @@ p <- dat_50 %>%
   labs(title = 'CRAWDAD') + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/nullsim_crawdad.pdf')
+pdf('function_development/comparing_methods/paper_figures/nullsim_crawdad.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -535,7 +549,8 @@ p <- dat_sp %>%
   labs(title = 'Squidpy Co-occurrence') + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/nullsim_squidpy.pdf')
+pdf('function_development/comparing_methods/paper_figures/nullsim_squidpy.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
@@ -552,7 +567,8 @@ p <- dat_rk %>%
   labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
   theme_bw()
 p
-pdf('function_development/comparing_methods/paper_figures/nullsim_ripleys.pdf')
+pdf('function_development/comparing_methods/paper_figures/nullsim_ripleys.pdf', 
+    height = 4, width = 5)
 p
 dev.off()
 
