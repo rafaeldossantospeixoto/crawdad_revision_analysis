@@ -49,7 +49,7 @@ vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig,
 
 
 
-## Plot trends -------------------------------------------------------------
+## Plot spat -------------------------------------------------------------
 
 
 data(seq)
@@ -75,6 +75,8 @@ for (ref_ct in unique(seq$celltypes)) {
          height = 20, width = 30)
 }
 
+
+# Trends ------------------------------------------------------------------
 
 ## convert to sf
 seq <- crawdad:::toSF(pos = seq[,c("x", "y")],
