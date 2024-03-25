@@ -304,7 +304,8 @@ dev.off()
 
 # Seq -------------------------------------------------------------------
 
-dat_sp <- read.csv('running_code/squidpy/results_data/dat_seq_squidpy.csv', row.names = 1)
+dat_sp <- read.csv('running_code/squidpy/results_data/dat_seq_squidpy.csv', 
+                   row.names = 1)
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>% 
