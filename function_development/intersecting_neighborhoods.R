@@ -106,6 +106,7 @@ saveRDS(shuffle.list, 'running_code/processed_data/shufflelist_seq.RDS')
 # ## Time was 17.62 mins
 # dat_50_dups <- crawdad::meltResultsList(results_50_dups, withPerms = T)
 saveRDS(dat_50_dups, 'running_code/processed_data/dat_seq_50_dups.RDS')
+dat_50_dups <- readRDS('running_code/processed_data/dat_seq_50_dups.RDS')
 
 
 ## vizColocDotplot
@@ -631,6 +632,8 @@ findTrends <- function(cells,
       if(removeDups){
         ## need to remove self cells else have trivial enrichment when d~0
         self.cells <- cells[cells$celltypes == ct,]
+        ## remove only the original cells, as the duplicates will have 
+        ## .something in the name
         neigh.cells <- neigh.cells[setdiff(rownames(neigh.cells), rownames(self.cells)),]
         
         # message("number of neighbor cells before: ", nrow(neigh.cells))
@@ -677,13 +680,143 @@ findTrends <- function(cells,
 
 # Testing functions -------------------------------------------------------
 
+## Params ------------------------------------------------------------------
+
 ncores <- 7
 data(seq)
-cells <- crawdad:::toSF(pos = seq[,c("x", "y")],
-                      celltypes = seq$celltypes)
+cells <- crawdad:::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
 dist = 50
 verbose = TRUE
 returnMeans = FALSE
 removeDups = FALSE
 shuffle.list <- readRDS('running_code/processed_data/shufflelist_seq.RDS')
 
+
+## findTrends ----------------------------------------------------------------
+
+sf::st_agr(cells) <- "constant"
+celltypes <- factor(cells$celltypes)
+d <- dist
+
+ct <- 'Definitive endoderm'
+vizClusters(cells, ofInterest = ct)
+results.all <- lapply(levels(celltypes), function(ct) {
+  
+  # get polygon geometries of reference cells of "celltype" up to defined distance "dist"
+  # use this to assess neighbors within "d" um of each cell
+  ref.buffer <- sf::st_buffer(cells[cells$celltypes == ct,], d) 
+  ## union polygons to avoid memory overflow, too slow
+  # ref.buffer_union <- sf::st_union(ref.buffer)
+  # get the different types of neighbor cells that are within "d" of the ref cells
+  neigh.cells <- sf::st_intersection(cells, ref.buffer$geometry)
+  
+  ## remove duplicate neighbor cells to prevent them from being counted multiple times
+  ## and inflate the Z scores
+  if(removeDups){
+    ## need to remove self cells else have trivial enrichment when d~0
+    self.cells <- cells[cells$celltypes == ct,]
+    ## remove only the original cells, as the duplicates will have 
+    ## .something in the name
+    neigh.cells <- neigh.cells[setdiff(rownames(neigh.cells), rownames(self.cells)),]
+    
+    # message("number of neighbor cells before: ", nrow(neigh.cells))
+    #neigh.cells <- neigh.cells[intersect(rownames(neigh.cells), rownames(cells)),]
+    ## hack to accommodate self cells that are neighbors of another self cell
+    neigh.cells <- neigh.cells[intersect(rownames(neigh.cells), c(rownames(cells), paste0(rownames(self.cells), '.1'))),]
+    # message("number of neighbor cells after removing dups: ", nrow(neigh.cells))
+  }
+  
+  ## evaluate significance https://online.stat.psu.edu/stat415/lesson/9/9.4
+  ## chose to shuffle the scales in parallel, but in each scale, the perms done linearly
+  ## I think a bottle neck originally was waiting for certain cell types to finish
+  ## so if I split up the scales, might be able to get through each cell type faster and speed up entire process?
+  ## I could also split up the permutations, but then each cell type for each scale is done one by one
+  ## I could do cell types in parallel, but then for each cell type need to go through each res and each perm one by one
+
+  ## not run
+  results <- evaluateSignificance(cells = cells,
+                                  randomcellslist = shuffle.list,
+                                  trueNeighCells = neigh.cells,
+                                  cellBuffer = ref.buffer,
+                                  ncores = ncores,
+                                  removeDups = removeDups,
+                                  returnMeans = returnMeans)
+  return(results)
+}) 
+names(results.all) <- levels(celltypes)
+
+
+## evaluateSignificance ----------------------------------------------------
+
+randomcellslist = shuffle.list
+trueNeighCells = neigh.cells
+cellBuffer = ref.buffer
+
+allcells <- cells
+trueNeighCells <- trueNeighCells
+cellBuffer <- cellBuffer
+
+cellsAtRes <- randomcellslist[['250']]
+## for each scale:
+results <- BiocParallel::bplapply(randomcellslist, function(cellsAtRes){
+  
+  ## Iterate through each permutation of a given scale and 
+  ## produce the scores for each neighbor cell type. 
+  ## Scores for a given permutation added as a row to a dataframe.
+  ## Take the column mean of the scores for each neighbor cell type across permutations.
+  ## The resulting vector of score means is returned and appended as a row in the `results` data,frame,
+  ## where each row is a scale, and contains Z scores for each neighbor cell type (the columns)
+  
+  randomcellslabels <- cellsAtRes[['3']]
+  ## for each res
+  scores <- do.call(rbind, lapply(cellsAtRes, function(randomcellslabels){
+    
+    randomcells <- allcells
+    randomcells$celltypes <- as.factor(randomcellslabels)
+    sf::st_agr(randomcells) <- "constant"
+    
+    ## should it be 19416? it's the same as the total number of cells
+    bufferrandomcells <- sf::st_intersection(randomcells, cellBuffer$geometry)
+    
+    ## should the self be removed from here too?
+    ## remove duplicate neighbor cells to prevent them from being counted multiple times
+    ## and inflate the Z scores
+    if(removeDups){
+      # message("number of permuted neighbor cells before: ", nrow(bufferrandomcells))
+      bufferrandomcells <- bufferrandomcells[intersect(rownames(bufferrandomcells), rownames(randomcells)),]
+      # message("number of permuted neighbor cells after removing dups: ", nrow(bufferrandomcells))
+    }
+    
+    ## evaluate significance https://online.stat.psu.edu/stat415/lesson/9/9.4
+    y1 <- table(trueNeighCells$celltypes)
+    y2 <- table(bufferrandomcells$celltypes)
+    n1 <- length(trueNeighCells$celltypes)
+    n2 <- length(bufferrandomcells$celltypes)
+    p1 <- y1/n1
+    p2 <- y2/n2
+    p <- (y1+y2)/(n1+n2)
+    Z <- (p1-p2)/sqrt(p*(1-p)*(1/n1+1/n2))
+    
+    rm(bufferrandomcells)
+    rm(randomcells)
+    gc(verbose = FALSE, reset = TRUE)
+    
+    return(Z)
+  }))
+  
+  ## returning the data.frame of Z scores for each permutation (row)
+  return(scores)
+  
+}, BPPARAM=BiocParallel::SnowParam(workers=ncores))
+
+## will be list of data.frame in this case
+## each data.frame is a scale
+names(results) <- names(randomcellslist)
+
+rm(allcells)
+rm(trueNeighCells)
+rm(cellBuffer)
+gc(verbose = FALSE, reset = TRUE)
+
+return(results)
+results.all
