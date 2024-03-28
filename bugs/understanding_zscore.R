@@ -7,6 +7,10 @@ calculateZScore <- function(y1, y2, n1, n2) {
   return(Z)
 }
 
+
+
+# Individual cells --------------------------------------------------------
+
 ## star cells with intersection
 calculateZScore(5,6,11,11)
 # [1] -0.4264014
@@ -33,3 +37,14 @@ calculateZScore(2,0,6,6)
 # [1] 1.549193
 calculateZScore(2,1,5,5)
 # [1] 0.6900656
+
+
+
+
+# Normalizing by ref ------------------------------------------------------
+
+calculateZScore(5, 6, 11, 11)
+# [1] -0.4264014
+
+calculateZScore(5/2, 6/2, 11/2, 11/2)
+# [1] -0.3015113
