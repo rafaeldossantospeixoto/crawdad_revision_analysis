@@ -1294,3 +1294,83 @@ for (ref_ct in all_cts) {
   # dev.off()
 }
 
+
+
+
+# Null Sim ----------------------------------------------------------------
+
+library(crawdad)
+library(tidyverse)
+ncores <- 7
+
+cells <- readRDS('simulating_data/null_sim/cells_nullsim_s0.RDS')
+vizClusters(cells)
+
+## reduced to 500
+scales <- seq(100, 500, by=50)
+
+## With dups ---------------------------------------------------
+
+# ## generate background
+# shuffle.list <- crawdad:::makeShuffledCells(cells,
+#                                             scales = scales,
+#                                             perms = 10,
+#                                             ncores = ncores,
+#                                             seed = 1,
+#                                             verbose = TRUE)
+# saveRDS(shuffle.list, 'running_code/processed_data/shufflelist_nullsim.RDS')
+# # No need to edit the function, just set removeDups to FALSE.
+# # find trends, dist 50
+# results_50_dups <- crawdad::findTrends(cells,
+#                                   dist = 50,
+#                                   shuffle.list = shuffle.list,
+#                                   ncores = ncores,
+#                                   verbose = TRUE,
+#                                   returnMeans = FALSE,
+#                                   removeDups = FALSE)
+# ## Time was 17.62 mins
+# dat_50_dups <- crawdad::meltResultsList(results_50_dups, withPerms = T)
+# saveRDS(dat_50_dups, 'running_code/processed_data/dat_nullsim_50_dups.RDS')
+dat_50_dups <- readRDS('running_code/processed_data/dat_nullsim_50_dups.RDS')
+
+zsig <- correctZBonferroni(dat_50)
+vizColocDotplot(dat_50_dups, reorder = F, 
+                zsigThresh = zsig, zscoreLimit = zsig*2,
+                dotSizes = c(5, 20)) +
+  theme(legend.position='bottom',
+        axis.text.x = element_text(vjust = 1))
+
+
+
+## With dups and corrected -------------------------------------------------
+
+shuffle.list <- readRDS('running_code/processed_data/shufflelist_nullsim.RDS')
+## No need to edit the function, just set removeDups to FALSE.
+## find trends, dist 50
+results_50_dups_ref <- findTrendsRef(cells,
+                                  dist = 50,
+                                  shuffle.list = shuffle.list,
+                                  ncores = ncores,
+                                  verbose = TRUE,
+                                  returnMeans = FALSE,
+                                  removeDups = FALSE)
+## Time was 12.03 mins
+dat_50_dups_ref <- crawdad::meltResultsList(results_50_dups_ref, withPerms = T)
+saveRDS(dat_50_dups_ref, 'running_code/processed_data/dat_nullsim_50_dups_ref.RDS')
+dat_50_dups_ref <- readRDS('running_code/processed_data/dat_nullsim_50_dups_ref.RDS')
+
+
+## vizColocDotplot
+zsig <- correctZBonferroni(dat_50_dups_ref)
+zsig <- 1.96
+## will not reach significance
+vizColocDotplot(dat_50_dups_ref, zscoreLimit = 2*zsig, 
+                reorder = F, mutual = T, dotSizes = c(3,10))  +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
+
+vizColocDotplot(dat_50_dups_ref, reorder = F, 
+                zscoreLimit = zsig*2,
+                dotSizes = c(5, 20)) +
+  theme(legend.position='bottom',
+        axis.text.x = element_text(vjust = 1))

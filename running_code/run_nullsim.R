@@ -45,19 +45,19 @@ dat_50 <- readRDS('running_code/processed_data/dat_nullsim_50.RDS')
 
 ## error because no dot with significance
 zsig <- correctZBonferroni(dat_50)
-vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, 
-                zscore.limit = zsig*2, 
-                dot.sizes = c(2, 14)) +
-  theme(legend.position='right',
-        axis.text.x = element_text(angle = 45, h = 0))
+# vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+#                 zscoreLimit = zsig*2, 
+#                 dotSizes = c(2, 14)) +
+#   theme(legend.position='right',
+#         axis.text.x = element_text(angle = 45, h = 0))
 
 
 
 ## Dotplot -----------------------------------------------------------------
 
 p <- vizColocDotplot(dat_50, reorder = F, 
-                     zscore.limit = zsig*2,
-                     dot.sizes = c(5, 20)) +
+                     zscoreLimit = zsig*2,
+                     dotSizes = c(5, 20)) +
   theme(legend.position='bottom',
         axis.text.x = element_text(vjust = 1))
 p
