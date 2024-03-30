@@ -1,4 +1,4 @@
-# Run sim samples ---------------------------------------------------------
+# Run embryo ---------------------------------------------------------
 
 library(crawdad)
 library(tidyverse)
@@ -13,6 +13,10 @@ seq %>% ggplot() +
 ## convert to sf
 seq <- crawdad:::toSF(pos = seq[,c("x", "y")],
                         celltypes = seq$celltypes)
+cells <- seq
+
+
+## CRAWDAD -----------------------------------------------------------------
 
 scales <- seq(100, 1000, by=50)
 
@@ -180,3 +184,47 @@ pdf('running_code/paper_figures/embryo_dotplot_crawdad.pdf',
     height = 7.5, width = 9)
 p
 dev.off()
+
+
+## Spatial plot ------------------------------------------------------------
+
+## flip to look like in the paper
+data(seq)
+seq$y <- -seq$y
+cells <- crawdad:::toSF(pos = seq[,c("x", "y")],
+                        celltypes = seq$celltypes)
+
+## tried to reproduce the same colors as in the preprint paper, but could not
+## so I decided to manually select the color of the specific cell types in 
+## illustrator and pass them as argument of the plot function
+all_cts <- unique(cells$celltypes)
+interest_cts <- sort(as.character(all_cts[all_cts != 'Low quality']))
+ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
+                      interest_cts) 
+saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
+
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
+  theme_void()
+p
+pdf('running_code/paper_figures/embryo/embryo_dotplot_crawdad.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Selected cell types -----------------------------------------------------
+
+interest_cts <- c('Endothelium', 
+                  'Haematoendothelial progenitors',
+                  'Forebrain/Midbrain/Hindbrain')
+## these colors were alpha = .5 in the paper, how to convert them back?
+ct_colors <- c('Endothelium' = '#FF8B00', 
+               'Haematoendothelial progenitors' = '#00FF2E',
+               'Forebrain/Midbrain/Hindbrain' = '#B184FF',
+               '#E6E6E6')
+vizClusters(cells, ofInterest = interest_cts) + 
+  scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
+  theme_void()
+  
