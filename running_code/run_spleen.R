@@ -1,6 +1,6 @@
 library(crawdad)
 library(tidyverse)
-ncores <- 7
+ncores <- 28
 
 
 # pkhl --------------------------------------------------------------------
@@ -22,7 +22,10 @@ shuffle.list <- crawdad:::makeShuffledCells(cells,
                                             ncores = ncores,
                                             seed = 1,
                                             verbose = TRUE)
-## Time was 25.74 mins
+## Time was 25.74 mins in my pc
+## Time was 70.47 mins in Easley with 28 cores
+saveRDS(shuffle.list, 'running_code/processed_data/spleen/shufflelist_pkhl_50.RDS')
+
 
 ## find trends, passing background as parameter
 ## changed distance to 50
@@ -32,10 +35,23 @@ results <- crawdad::findTrends(cells,
                                ncores = ncores,
                                verbose = TRUE,
                                returnMeans = FALSE)
-## Time was 107.72 mins
+## Time was 107.72 mins in my pc
+## Time was 104.3 mins in Easley with 28 cores
+## The number of cores does not seem to help much
 
 dat <- crawdad::meltResultsList(results, withPerms = TRUE)
-saveRDS(dat, 'running_code/processed_data/dat_pkhl_50.RDS')
+saveRDS(dat, 'running_code/processed_data/spleen/dat_pkhl_50.RDS')
+
+
+
+
+# Subset analysis ---------------------------------------------------------
+
+
+
+
+
+## Paper figures -----------------------------------------------------------
 
 zsig <- correctZBonferroni(dat)
 
@@ -44,15 +60,10 @@ dat_filtered <- dat %>%
   filter(neighbor != 'indistinct') %>% 
   filter(reference != 'indistinct')
 
-## reorder to be the same as the paper in biorxiv?
-ct_order <- c('Podoplanin', 'CD4 Memory T cells', 'Fol B cells',
-              'Macrophages', 'CD8 Memory T cells', 'Ki67 proliferating',
-              'Myeloid cells', 'B cells, red pulp', 'Blood endothelial',
-              'Sinusoidal cells', 'Neutrophils/Monocytes')
 p <- vizColocDotplot(dat_filtered, zsig.thresh = zsig, zscore.limit = zsig*2, 
                      reorder = TRUE, dot.sizes = c(2, 14)) +
-  scale_x_discrete(limits = ct_order, position = 'top') +
-  scale_y_discrete(limits = ct_order, position = 'right') +
+  # scale_x_discrete(limits = ct_order, position = 'top') +
+  # scale_y_discrete(limits = ct_order, position = 'right') +
   theme(legend.position='bottom',
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
