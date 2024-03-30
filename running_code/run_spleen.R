@@ -47,42 +47,38 @@ saveRDS(dat, 'running_code/processed_data/spleen/dat_pkhl_50.RDS')
 
 ## Subset analysis ---------------------------------------------------------
 
-binomMat <- crawdad::binomialTestMatrix(cells,
-                                        neigh.dist = 100,
-                                        ncores = ncores,
-                                        verbose = TRUE)
+## changed neighborhood to 50
+# binomMat <- crawdad::binomialTestMatrix(cells,
+#                                         neigh.dist = 50,
+#                                         ncores = ncores,
+#                                         verbose = TRUE)
+# ## Time to compute was 25.68mins
+# head(binomMat)
+# saveRDS(binomMat, file = 'running_code/processed_data/spleen/binomMat_pkhl_50.RDS')
+binomMat <- readRDS('running_code/processed_data/spleen/binomMat_pkhl_50.RDS')
 
-head(binomMat)
-
-saveRDS(binomMat, file="rafael_analysis/paper/fig3_binomMat.RDS")
-binomMat <- readRDS("rafael_analysis/paper/fig3_binomMat.RDS")
-
-subset.list <- crawdad::selectSubsets(binomMat,
-                                      cells$celltypes,
-                                      sub.type = "near",
-                                      sub.thresh = 0.05,
-                                      ncores = ncores,
-                                      verbose = TRUE)
-
-saveRDS(subset.list, file="rafael_analysis/paper/fig3_subset.RDS")
-subset.list <- readRDS("rafael_analysis/paper/fig3_subset.RDS")
+# subset.list <- crawdad::selectSubsets(binomMat,
+#                                       cells$celltypes,
+#                                       sub.type = "near",
+#                                       sub.thresh = 0.05,
+#                                       ncores = ncores,
+#                                       verbose = TRUE)
+# saveRDS(subset.list, file = 'running_code/processed_data/spleen/subsetlist_pkhl_50.RDS')
+## Time to compute was 0.17mins
+subset.list <- readRDS('running_code/processed_data/spleen/subsetlist_pkhl_50.RDS')
 
 results.subsets <- crawdad::findTrends(cells,
-                                       dist = 100,
+                                       dist = 50,
                                        shuffle.list = shuffle.list,
                                        subset.list = subset.list,
                                        ncores = ncores,
                                        verbose = TRUE,
                                        returnMeans = FALSE)
 ## 8.0865 hours to run
-results.subsets
-saveRDS(results.subsets, file="rafael_analysis/paper/fig3_results.subsets.RDS")
-results.subsets <- readRDS("rafael_analysis/paper/fig3_results.subsets.RDS")
-
-
-
 ## subsets
 dats <- crawdad::meltResultsList(results.subsets, withPerms = TRUE)
+saveRDS(dats, file = 'running_code/processed_data/spleen/dats_pkhl_50.RDS')
+dats <- readRDS('running_code/processed_data/spleen/dats_pkhl_50.RDS')
 
 ## Multiple-test correction
 ntestss <- length(unique(dats$reference)) * length(unique(dats$neighbor))
