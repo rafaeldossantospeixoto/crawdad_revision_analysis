@@ -166,21 +166,23 @@ dev.off()
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
-vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, 
-                zscore.limit = zsig*2, 
-                dot.sizes = c(2, 14)) +
+vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+                zscoreLimit = zsig*2, 
+                dotSizes = c(2, 14)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 
 ## Dotplot -----------------------------------------------------------------
 
-p <- vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, 
-                     zscore.limit = zsig*2,
-                     dot.sizes = c(1, 8)) +
+
+p <- vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+                     zscoreLimit = zsig*2,
+                     dotSizes = c(1, 8)) +
+  coord_fixed() + 
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 p
-pdf('running_code/paper_figures/embryo_dotplot_crawdad.pdf',
+pdf('running_code/paper_figures/embryo/dotplot_crawdad.pdf',
     height = 7.5, width = 9)
 p
 dev.off()
@@ -205,9 +207,10 @@ saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
 
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
-  theme_void()
+  coord_fixed() + 
+  theme_minimal()
 p
-pdf('running_code/paper_figures/embryo/embryo_dotplot_crawdad.pdf',
+pdf('running_code/paper_figures/embryo/spatial_plot.pdf',
     height = 7, width = 12)
 p
 dev.off()
@@ -216,15 +219,35 @@ dev.off()
 
 ### Selected cell types -----------------------------------------------------
 
+## Endothelium
 interest_cts <- c('Endothelium', 
                   'Haematoendothelial progenitors',
                   'Forebrain/Midbrain/Hindbrain')
 ## these colors were alpha = .5 in the paper, how to convert them back?
-ct_colors <- c('Endothelium' = '#FF8B00', 
-               'Haematoendothelial progenitors' = '#00FF2E',
-               'Forebrain/Midbrain/Hindbrain' = '#B184FF',
-               '#E6E6E6')
-vizClusters(cells, ofInterest = interest_cts) + 
-  scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
-  theme_void()
+interest_ct_colors <- ct_colors[interest_cts]
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) + 
+  scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
+  coord_fixed() + 
+  theme_minimal()
+p
+pdf('running_code/paper_figures/embryo/spatial_plot_endothelium.pdf',
+    height = 7, width = 12)
+p
+dev.off()
   
+## Endothelium
+interest_cts <- c('Intermediate mesoderm', 
+                  'Lateral plate mesoderm',
+                  'Cardiomyocytes')
+## these colors were alpha = .5 in the paper, how to convert them back?
+interest_ct_colors <- ct_colors[interest_cts]
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) + 
+  scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
+  coord_fixed() + 
+  theme_minimal()
+p
+pdf('running_code/paper_figures/embryo/spatial_plot_intermediatemesoderm.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
