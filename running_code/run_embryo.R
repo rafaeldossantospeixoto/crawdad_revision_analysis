@@ -166,9 +166,20 @@ dev.off()
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
+p <- vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+                zscoreLimit = zsig*2, mutual = T, dotSizes = c(1, 10)) +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
+p
+pg <- ggplot_build(p)
+ct_order <- pg$layout$panel_params[[1]]$x$get_labels()
+
+dat_50 <- dat_50 %>% 
+  filter(scale <= 750)
 vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
-                zscoreLimit = zsig*2, 
-                dotSizes = c(2, 14)) +
+                zscoreLimit = zsig*2, mutual = T, dotSizes = c(1, 10)) +
+  # scale_x_discrete(limits = ct_order, position = 'top') +
+  # scale_y_discrete(limits = ct_order, position = 'right') +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 
