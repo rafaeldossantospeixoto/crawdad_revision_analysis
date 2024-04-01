@@ -306,8 +306,12 @@ dev.off()
 
 dat_sp <- read.csv('running_code/squidpy/results_data/dat_seq_squidpy.csv', 
                    row.names = 1)
-dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
+dat_sp <- dat_sp %>% 
+  filter(distance <= 750)
 
+dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
+dat_50 <- dat_50 %>% 
+  filter(scale <= 750)
 dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>% 
   summarize(Z = mean(Z))
 
@@ -336,8 +340,10 @@ reference_ct <- 'Endothelium'
 dat_rk <- readRDS(paste0("running_code/processed_data/dat_embryo_ripleys_",
                          sub(" ", "_", reference_ct),
                          ".RDS"))
+dat_rk <- dat_rk %>% 
+  filter(radius <= 750)
 
-selected_cts <- c('Spinal cord','Haematoendothelial progenitors')
+selected_cts <- c('Forebrain/Midbrain/Hindbrain','Haematoendothelial progenitors')
 all_cts <- unique(as.character(dat_50$neighbor))
 ordered_cts <- c(all_cts[!all_cts %in% selected_cts], selected_cts)
 selected_colors <- c('blue', 'red')
@@ -414,7 +420,7 @@ dat_rk <- readRDS(paste0("running_code/processed_data/dat_embryo_ripleys_",
                          sub(" ", "_", reference_ct),
                          ".RDS"))
 
-selected_cts <- c('Spinal cord','Lateral plate mesoderm')
+selected_cts <- c('Cardiomyocytes','Lateral plate mesoderm')
 all_cts <- unique(as.character(dat_50$neighbor))
 ordered_cts <- c(all_cts[!all_cts %in% selected_cts], selected_cts)
 selected_colors <- c('blue', 'red')
@@ -426,6 +432,7 @@ ordered_colors <- setNames(all_colors, ordered_cts)
 ## CRAWDAD
 p <- dat_50 %>% 
   filter(reference == reference_ct) %>% 
+  filter(scale <= 750) %>% 
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
@@ -446,6 +453,7 @@ dev.off()
 ## Squidpy
 p <- dat_sp %>% 
   filter(reference == reference_ct) %>% 
+  filter(distance <= 750) %>% 
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
@@ -465,6 +473,7 @@ dev.off()
 ## Ripleys
 p <- dat_rk %>% 
   filter(reference == reference_ct) %>% 
+  filter(radius <= 750) %>% 
   mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
   mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
