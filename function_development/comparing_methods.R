@@ -583,3 +583,94 @@ p
 dev.off()
 
 
+
+
+# Spleen ------------------------------------------------------------------
+
+## pkhl -------------------------------------------------------------------
+
+dat_sp <- read.csv('running_code/squidpy/results_data/spleen/dat_pkhl_squidpy.csv', row.names = 1)
+# dat_50 <- readRDS('running_code/processed_data/dat_nullsim_50.RDS')
+# dat_rk <- readRDS('running_code/processed_data/dat_nullsim_ripleys.RDS')
+
+dat_50 <- dat_50 %>% group_by(reference, neighbor, scale) %>% 
+  summarize(Z = mean(Z))
+
+zsig <- correctZBonferroni(dat_50)
+
+# data(sim)
+# cells <- crawdad::toSF(pos = sim[,c("x", "y")], celltypes = sim$celltypes)
+# p <- vizClusters(cells)
+# p
+# pdf('function_development/comparing_methods/paper_figures/nullsim_viz.pdf')
+# p
+# dev.off()
+
+
+## Highlight specific pairs ------------------------------------------------
+
+selected_cts <- c('Sinusoidal cells', 'Fol B cells')
+all_cts <- unique(as.character(dat_sp$reference))
+ordered_cts <- c(all_cts[!all_cts %in% selected_cts], selected_cts)
+selected_colors <- c('blue', 'red')
+all_colors <- c(rep('lightgray', times = length(all_cts) - length(selected_cts)), selected_colors)
+ordered_colors <- setNames(all_colors, ordered_cts)
+
+
+### Save plots --------------------------------------------------------------
+
+reference_ct <- 'CD4 Memory T cells'
+
+## CRAWDAD
+p <- dat_50 %>% 
+  filter(reference == reference_ct) %>% 
+  # mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  # mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=scale, y=Z, group = neighbor, color = selected_cts), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = rainbow(4)) +
+  ggplot2::geom_hline(yintercept = zsig, color = "black", size = 0.3, linetype = "dashed") + 
+  ggplot2::geom_hline(yintercept = -zsig, color = "black", size = 0.3, linetype = "dashed") + 
+  labs(title = 'CRAWDAD') + 
+  theme_bw()
+p
+pdf('function_development/comparing_methods/paper_figures/pkhl_crawdad.pdf', 
+    height = 4, width = 5)
+p
+dev.off()
+
+## Squidpy
+p <- dat_sp %>% 
+  filter(reference == reference_ct) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>%
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>%
+  ggplot() + 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_cts), 
+            size = .5) +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = 'Squidpy Co-occurrence') + 
+  theme_bw()
+p
+pdf('function_development/comparing_methods/paper_figures/pkhl_squidpy.pdf', 
+    height = 4, width = 5)
+p
+dev.off()
+
+## Ripleys
+p <- dat_rk %>% 
+  filter(reference == reference_ct) %>% 
+  # mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  # mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = neighbor), 
+            size = .5) +
+  ggplot2::geom_hline(yintercept = 0, color = "black", size = 0.3, linetype = "solid") +
+  scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
+  labs(title = "Ripley's K (isotropic-corrected minus theoretical)") + 
+  theme_bw()
+p
+pdf('function_development/comparing_methods/paper_figures/pkhl_ripleys.pdf', 
+    height = 4, width = 5)
+p
+dev.off()
