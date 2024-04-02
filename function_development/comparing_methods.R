@@ -643,10 +643,10 @@ dev.off()
 ## Squidpy
 p <- dat_sp %>% 
   filter(reference == reference_ct) %>% 
-  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>%
-  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>%
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  mutate(selected_neighbor = fct_other(neighbor, keep = selected_cts)) %>% 
   ggplot() + 
-  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_cts), 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = selected_neighbor), 
             size = .5) +
   scale_color_manual(name = 'Neighbor', values = c(selected_colors, 'lightgray')) +
   labs(title = 'Squidpy Co-occurrence') + 
