@@ -212,8 +212,9 @@ cells <- crawdad:::toSF(pos = seq[,c("x", "y")],
 ## illustrator and pass them as argument of the plot function
 all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'Low quality']))
-ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
-                      interest_cts) 
+# ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
+#                       interest_cts) 
+ct_colors <- setNames(rainbow(length(interest_cts)), interest_cts)
 saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
 
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
