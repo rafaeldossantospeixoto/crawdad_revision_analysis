@@ -186,7 +186,10 @@ vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig,
 ## Dotplot -----------------------------------------------------------------
 
 
-p <- vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+p <- dat_50 %>% 
+  filter(neighbor != 'Low quality',
+         reference != 'Low quality') %>% 
+  vizColocDotplot(reorder = TRUE, zsigThresh = zsig, 
                      zscoreLimit = zsig*2,
                      dotSizes = c(1, 8)) +
   coord_fixed() + 
@@ -214,8 +217,10 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'Low quality']))
 # ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
 #                       interest_cts) 
-ct_colors <- setNames(rainbow(length(interest_cts)), interest_cts)
-saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
+# ct_colors <- setNames(rainbow(length(interest_cts)), interest_cts)
+# saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
+ct_colors <- readRDS('running_code/processed_data/colors_seq.RDS')
+
 
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
@@ -250,7 +255,7 @@ dev.off()
 ## Endothelium
 interest_cts <- c('Intermediate mesoderm', 
                   'Lateral plate mesoderm',
-                  'Cardiomyocytes')
+                  'Forebrain/Midbrain/Hindbrain')#'Cardiomyocytes')
 ## these colors were alpha = .5 in the paper, how to convert them back?
 interest_ct_colors <- ct_colors[interest_cts]
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) + 
