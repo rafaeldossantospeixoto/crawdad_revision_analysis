@@ -13,7 +13,7 @@ max(slide$y) - min(slide$y)
 slide <- crawdad:::toSF(pos = slide[,c("x", "y")],
                         celltypes = slide$celltypes)
 
-scales <- seq(100, 1000, by=100)
+scales <- slide(100, 1000, by=100)
 
 ## generate background
 shuffle.list <- crawdad:::makeShuffledCells(slide,
@@ -67,5 +67,55 @@ p <- vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig,
 p
 pdf('running_code/paper_figures/cerebellum_dotplot_crawdad.pdf',
     height = 7, width = 8)
+p
+dev.off()
+
+
+
+## Spatial plot ------------------------------------------------------------
+
+data(slide)
+cells <- crawdad:::toSF(pos = slide[,c("x", "y")],
+                        celltypes = slide$celltypes)
+
+## tried to reproduce the same colors as in the preprint paper, but could not
+## so I decided to manually select the color of the specific cell types in 
+## illustrator and pass them as argument of the plot function
+all_cts <- unique(cells$celltypes)
+interest_cts <- sort(as.character(all_cts))
+# ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
+#                       interest_cts) 
+# ct_colors <- setNames(rainbow(length(interest_cts)), interest_cts)
+# saveRDS(ct_colors, 'running_code/processed_data/colors_slide.RDS')
+ct_colors <- readRDS('running_code/processed_data/colors_slide.RDS')
+
+
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
+  coord_fixed() + 
+  theme_minimal()
+p
+pdf('running_code/paper_figures/cerebellum/spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Selected cell types -----------------------------------------------------
+
+## Purkinje
+interest_cts <- c('Purkinje', 
+                  'Bergmann',
+                  'Oligodendrocytes')
+## these colors were alpha = .5 in the paper, how to convert them back?
+interest_ct_colors <- ct_colors[interest_cts]
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) + 
+  scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
+  coord_fixed() + 
+  theme_minimal()
+p
+pdf('running_code/paper_figures/cerebellum/spatial_plot_purkinje.pdf',
+    height = 7, width = 12)
 p
 dev.off()
