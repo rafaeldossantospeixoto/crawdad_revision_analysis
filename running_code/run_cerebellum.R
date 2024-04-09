@@ -46,12 +46,13 @@ vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig,
 
 # Paper figures -----------------------------------------------------------
 
+set.seed(42)
 dat_50 <- readRDS('running_code/processed_data/dat_slide_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
-vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, 
-                zscore.limit = zsig*2, 
-                dot.sizes = c(2, 14)) +
+vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+                zscoreLimit = zsig*2, 
+                dotSizes = c(2, 14)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 
@@ -59,9 +60,9 @@ vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig,
 
 ## Dotplot -----------------------------------------------------------------
 
-p <- vizColocDotplot(dat_50, reorder = TRUE, zsig.thresh = zsig, 
-                     zscore.limit = zsig*2,
-                     dot.sizes = c(1, 9)) +
+p <- vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
+                     zscoreLimit = zsig*2,
+                     dotSizes = c(1, 9)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 p
@@ -83,9 +84,9 @@ cells <- crawdad:::toSF(pos = slide[,c("x", "y")],
 ## illustrator and pass them as argument of the plot function
 all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts))
-# ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
-#                       interest_cts) 
-# ct_colors <- setNames(rainbow(length(interest_cts)), interest_cts)
+# ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)),
+#                       interest_cts)
+# ct_colors <- setNames(sample(rainbow(length(interest_cts))), interest_cts)
 # saveRDS(ct_colors, 'running_code/processed_data/colors_slide.RDS')
 ct_colors <- readRDS('running_code/processed_data/colors_slide.RDS')
 

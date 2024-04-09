@@ -163,6 +163,7 @@ dev.off()
 
 # Paper figures -----------------------------------------------------------
 
+set.seed(42)
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
@@ -217,8 +218,8 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'Low quality']))
 # ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
 #                       interest_cts) 
-# ct_colors <- setNames(rainbow(length(interest_cts)), interest_cts)
-# saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
+ct_colors <- setNames(sample(rainbow(length(interest_cts))), interest_cts)
+saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
 ct_colors <- readRDS('running_code/processed_data/colors_seq.RDS')
 
 
@@ -252,10 +253,10 @@ pdf('running_code/paper_figures/embryo/spatial_plot_endothelium.pdf',
 p
 dev.off()
   
-## Endothelium
+## Intermediate
 interest_cts <- c('Intermediate mesoderm', 
                   'Lateral plate mesoderm',
-                  'Forebrain/Midbrain/Hindbrain')#'Cardiomyocytes')
+                  'Cardiomyocytes')
 ## these colors were alpha = .5 in the paper, how to convert them back?
 interest_ct_colors <- ct_colors[interest_cts]
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) + 
