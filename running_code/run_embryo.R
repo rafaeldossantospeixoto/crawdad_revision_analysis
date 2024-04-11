@@ -218,10 +218,13 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'Low quality']))
 # ct_colors <- setNames(tail(SteppedSequential5Steps, length(interest_cts)), 
 #                       interest_cts) 
-ct_colors <- setNames(sample(rainbow(length(interest_cts))), interest_cts)
-saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
+# ct_colors <- setNames(sample(rainbow(length(interest_cts))), interest_cts)
+# saveRDS(ct_colors, 'running_code/processed_data/colors_seq.RDS')
 ct_colors <- readRDS('running_code/processed_data/colors_seq.RDS')
 
+ordered_cts <- names(sort(table(cells$celltypes), decreasing = T))
+cells <- cells %>% 
+  arrange(match(celltypes, ordered_cts))
 
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +

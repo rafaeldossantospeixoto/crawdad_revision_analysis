@@ -1,4 +1,4 @@
-# Run sim samples ---------------------------------------------------------
+# Run cerebellum ---------------------------------------------------------
 
 library(crawdad)
 library(tidyverse)
@@ -90,6 +90,9 @@ interest_cts <- sort(as.character(all_cts))
 # saveRDS(ct_colors, 'running_code/processed_data/colors_slide.RDS')
 ct_colors <- readRDS('running_code/processed_data/colors_slide.RDS')
 
+ordered_cts <- names(sort(table(cells$celltypes), decreasing = T))
+cells <- cells %>% 
+  arrange(match(celltypes, ordered_cts))
 
 p <- vizClusters(cells, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
