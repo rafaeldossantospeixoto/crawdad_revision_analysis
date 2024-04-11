@@ -9,3 +9,4 @@ bugs/data/*
 crawdad_revision_analysis.Rproj
 .RData
 running_code/processed_data/spleen/*
+running_code/processed_data/thymus/*
