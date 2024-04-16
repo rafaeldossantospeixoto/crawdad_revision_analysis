@@ -1,3 +1,8 @@
+
+# Dotplots comparing ------------------------------------------------------
+
+
+
 #' @param colors character vector; colors for the gradient heatmap (low, mid, 
 #' high). NAs will be colored in light gray.
 
@@ -293,7 +298,7 @@ selectScalesDat <- function(dat, zsig.thresh, zscore.limit = NULL){
 
 
 
-# Draft -------------------------------------------------------------------
+## Draft -------------------------------------------------------------------
 
 ## The idea was to put the difference of Z scores and scales in the same plot.
 ## The difference in z score would be hue from blue to red and the difference
@@ -512,3 +517,143 @@ selectSigDat <- function(dat, zsig.thresh, zscore.limit = NULL){
   
   return(sig_dat)
 }
+
+
+
+
+# Compare mutual relationships --------------------------------------------
+
+
+## Draft -------------------------------------------------------------------
+
+library(tidyverse)
+library(crawdad)
+
+dat_vhck <- readRDS('running_code/processed_data/thymus/dat_vhck_50.RDS')
+dat_ktjk <- readRDS('running_code/processed_data/thymus/dat_ktjk_50.RDS')
+
+ct_order <- readRDS('running_code/processed_data/ct_order_thymus.RDS')
+zsig <- correctZBonferroni(dat_vhck)
+
+## Dotplot vhck
+dat_vhck %>% 
+  filter(neighbor != 'indistinct') %>% 
+  filter(reference != 'indistinct') %>% 
+  vizColocDotplot(zsigThresh = zsig, zscoreLimit = zsig*2, 
+                  reorder = TRUE, mutual = T, dotSizes = c(2, 14)) +
+  scale_x_discrete(limits = ct_order, position = 'top') +
+  scale_y_discrete(limits = ct_order, position = 'right') +
+  theme(legend.position='bottom',
+        axis.text.x = element_text(angle = 45, h = 0),
+        legend.box = 'vertical')
+
+## Dotplot vhck
+dat_ktjk %>% 
+  filter(neighbor != 'indistinct') %>% 
+  filter(reference != 'indistinct') %>% 
+  vizColocDotplot(zsigThresh = zsig, zscoreLimit = zsig*2, 
+                  reorder = TRUE, mutual = T, dotSizes = c(2, 14)) +
+  scale_x_discrete(limits = ct_order, position = 'top') +
+  scale_y_discrete(limits = ct_order, position = 'right') +
+  theme(legend.position='bottom',
+        axis.text.x = element_text(angle = 45, h = 0),
+        legend.box = 'vertical')
+
+## define relationships
+dat_ktjk <- dat_ktjk %>% 
+  filter(neighbor != 'indistinct') %>% 
+  filter(reference != 'indistinct') %>% 
+  dplyr::group_by(neighbor, scale, reference) %>% 
+  dplyr::summarize(Z = mean(Z)) %>% 
+  dplyr::filter(abs(Z) >= zsig) %>% 
+  dplyr::group_by(neighbor, reference) %>% 
+  dplyr::filter(scale == min(scale, na.rm = TRUE)) %>% 
+  dplyr::mutate(relationship = case_when(Z > 0 ~ 'enrichment',
+                                         Z < 0 ~ 'depletion',
+                                         T ~ 'other'))
+dat_vhck <- dat_vhck %>% 
+  filter(neighbor != 'indistinct') %>% 
+  filter(reference != 'indistinct') %>% 
+  dplyr::group_by(neighbor, scale, reference) %>% 
+  dplyr::summarize(Z = mean(Z)) %>% 
+  dplyr::filter(abs(Z) >= zsig) %>% 
+  dplyr::group_by(neighbor, reference) %>% 
+  dplyr::filter(scale == min(scale, na.rm = TRUE)) %>% 
+  dplyr::mutate(relationship = case_when(Z > 0 ~ 'enrichment',
+                                         Z < 0 ~ 'depletion',
+                                         T ~ 'other'))
+
+
+### Enrichment --------------------------------------------------------------
+
+## join
+samples <- c('_ktjk', '_vhck')
+merged_dat <- full_join(dat_ktjk, dat_vhck, by = c('neighbor', 'reference'), 
+          suffix = samples) %>% 
+  mutate(mutual = (relationship_ktjk == 'enrichment') & 
+           (relationship_vhck == 'enrichment')) %>% 
+  mutate(mean_scale = (scale_ktjk + scale_vhck)/2)
+
+## scale sizes
+lsizes <- sort(unique(merged_dat$scale))
+legend_sizes <- c(lsizes[1],
+                  round(mean(c(lsizes[1], lsizes[length(lsizes)]))),
+                  lsizes[length(lsizes)])
+## order
+ct_order <- readRDS('running_code/processed_data/ct_order_thymus.RDS')
+## plot
+merged_dat %>% 
+  filter(mutual == T) %>% 
+  ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, size=mean_scale)) +
+  ggplot2::geom_point(color='darkgreen') + 
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
+                                                     vjust = 0.5, 
+                                                     hjust=1)) +
+  ggplot2::scale_radius(trans = 'reverse',
+                        breaks = legend_sizes,
+                        range = c(5, 15)) + 
+  ggplot2::scale_x_discrete(position = "top") + 
+  ggplot2::theme_bw() +
+  scale_x_discrete(limits = ct_order, position = 'top') +
+  scale_y_discrete(limits = ct_order, position = 'right') +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
+
+
+
+### Depletion ---------------------------------------------------------------
+
+## join
+samples <- c('_ktjk', '_vhck')
+merged_dat <- full_join(dat_ktjk, dat_vhck, by = c('neighbor', 'reference'), 
+                        suffix = samples) %>% 
+  mutate(mutual = (relationship_ktjk == 'depletion') & 
+           (relationship_vhck == 'depletion')) %>% 
+  mutate(mean_scale = (scale_ktjk + scale_vhck)/2)
+
+## scale sizes
+lsizes <- sort(unique(merged_dat$scale))
+legend_sizes <- c(lsizes[1],
+                  round(mean(c(lsizes[1], lsizes[length(lsizes)]))),
+                  lsizes[length(lsizes)])
+## order
+ct_order <- readRDS('running_code/processed_data/ct_order_thymus.RDS')
+## plot
+merged_dat %>% 
+  filter(mutual == T) %>% 
+  ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, size=mean_scale)) +
+  ggplot2::geom_point(color='#8B8000') + 
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
+                                                     vjust = 0.5, 
+                                                     hjust=1)) +
+  ggplot2::scale_radius(trans = 'reverse',
+                        breaks = legend_sizes,
+                        range = c(5, 15)) + 
+  ggplot2::scale_x_discrete(position = "top") + 
+  ggplot2::theme_bw() +
+  scale_x_discrete(limits = ct_order, position = 'top') +
+  scale_y_discrete(limits = ct_order, position = 'right') +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
+
+
