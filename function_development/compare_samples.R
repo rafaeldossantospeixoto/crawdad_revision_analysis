@@ -547,7 +547,7 @@ dat_vhck %>%
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 
-## Dotplot vhck
+## Dotplot ktjk
 dat_ktjk %>% 
   filter(neighbor != 'indistinct') %>% 
   filter(reference != 'indistinct') %>% 
@@ -642,7 +642,7 @@ ct_order <- readRDS('running_code/processed_data/ct_order_thymus.RDS')
 merged_dat %>% 
   filter(mutual == T) %>% 
   ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, size=mean_scale)) +
-  ggplot2::geom_point(color='#8B8000') + 
+  ggplot2::geom_point(color='yellow') + 
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
                                                      vjust = 0.5, 
                                                      hjust=1)) +
@@ -655,5 +655,138 @@ merged_dat %>%
   scale_y_discrete(limits = ct_order, position = 'right') +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
+
+
+# Functions ---------------------------------------------------------------
+
+#' Define Relationship Type
+#' 
+#' @description
+#' Define the type of relationship based on the Z score (enrichment or 
+#' depletion).
+#' 
+#' @param dat `findTrends()` data.frame; the information about the scale, 
+#' Z-score, reference and the neighbor cell. The input data.frame should be the 
+#' results list from `findTrends()` that has been melted into a data.frame 
+#' using `meltResultsList()`.
+#' @param zSigThresh numeric; the Z score significance threshold (default: 1.96).
+#' 
+defineRelationshipType <- function(dat, zSigThresh){
+  dat <- dat %>% 
+    dplyr::group_by(neighbor, scale, reference) %>% 
+    dplyr::summarize(Z = mean(Z)) %>% 
+    dplyr::filter(abs(Z) >= zSigThresh) %>% 
+    dplyr::group_by(neighbor, reference) %>% 
+    dplyr::filter(scale == min(scale, na.rm = TRUE)) %>% 
+    dplyr::mutate(relationship = dplyr::case_when(Z > 0 ~ 'enrichment',
+                                                  Z < 0 ~ 'depletion',
+                                                  T ~ 'other'))
+  return(dat)
+}
+
+
+
+vizMutualRelationships <- function(relType = c('enrichment', 'depletion'), 
+                                   dat1, dat2, 
+                                   zSigThresh = 1.96, pSigThresh = NULL,
+                                   symmetrical = FALSE, # reorder = FALSE,
+                                   onlySignificant = FALSE,
+                                   dotSizes = c(6,31)){
+  
+  ## colors
+  rel_color <- c('enrichment' = '#009739', 'depletion' = '#FEDD00')[[relType]]
+  
+  ## calculate Z score from p-value
+  if (!is.null(pSigThresh)) {
+    zSigThresh = round(qnorm(pSigThresh/2, lower.tail = F), 2)
+  }
+  
+  ## define relationship type
+  dat1 <- defineRelationshipType(dat1, zSigThresh)
+  dat2 <- defineRelationshipType(dat2, zSigThresh)
+  
+  ## join
+  merged_dat <- dplyr::full_join(dat1, dat2, by = c('neighbor', 'reference'), 
+                                 suffix = c('_1', '_2')) %>% 
+    dplyr::mutate(mutual = (relationship_1 == relType) & 
+                    (relationship_2 == relType)) %>% 
+    dplyr::mutate(mean_scale = (scale_1 + scale_2)/2)
+  
+  
+  
+  ## scale sizes
+  lsizes <- sort(unique(merged_dat$mean_scale))
+  legend_sizes <- c(lsizes[1],
+                    round(mean(c(lsizes[1], lsizes[length(lsizes)]))),
+                    lsizes[length(lsizes)])
+  
+  ## highlight symmetrical
+  if (symmetrical) {
+    ## create pairs
+    df_pairs <- merged_dat %>% 
+      dplyr::mutate(pair = paste(sort(c(gsub(" ", "", reference), 
+                                        gsub(" ", "", neighbor))), 
+                                 collapse = '_'))
+    df_same_type <- df_pairs %>% 
+      dplyr::group_by(pair) %>% 
+      ## check if the type is not different for each ref of the pair and
+      ## check if there are two relationships by checking distinct references
+      dplyr::summarise(same_type = (dplyr::n_distinct(relationship_1) != 2) & 
+                         (dplyr::n_distinct(reference) == 2))
+    ## merge to reorder
+    df_pairs <- df_pairs %>% 
+      dplyr::left_join(df_same_type, by = 'pair')
+    ## check if pairs are duplicate
+    symmetrical_same_relationships <- df_pairs$same_type
+    merged_dat$symmetrical <- symmetrical_same_relationships
+  }
+  
+  ## plot
+  p <- merged_dat %>% 
+    dplyr::filter(mutual == T) %>% 
+    ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, size=mean_scale)) +
+    ggplot2::geom_point(color = rel_color) + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
+                                                       vjust = 0.5, 
+                                                       hjust=1)) +
+    {if (symmetrical) ggplot2::geom_point(data = ~dplyr::filter(.x, symmetrical == T),
+                                        ggplot2::aes(x=reference, y=neighbor),
+                                        shape = 18, color = '#012169', 
+                                        size = 2*dotSizes[1]/3)} + 
+    ggplot2::scale_radius(trans = 'reverse',
+                          breaks = legend_sizes,
+                          range = dotSizes) + 
+    ggplot2::scale_x_discrete(position = "top") + 
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position='right',
+                   axis.text.x = ggplot2::element_text(angle = 45, h = 0))
+  
+  ## plot all cell types
+  if (!onlySignificant) {
+    all_cts <- sort(unique(c(dat1$reference, dat1$reference)))
+    p <- p +
+      ggplot2::scale_x_discrete(limits = all_cts, position = 'top') +
+      ggplot2::scale_y_discrete(limits = all_cts) 
+  }
+  
+  return(p)
+}
+
+
+# Testing -----------------------------------------------------------------
+
+library(crawdad)
+
+dat_vhck <- readRDS('running_code/processed_data/thymus/dat_vhck_50.RDS') %>% 
+  dplyr::filter(neighbor != 'indistinct', reference != 'indistinct')
+dat_ktjk <- readRDS('running_code/processed_data/thymus/dat_ktjk_50.RDS') %>% 
+  dplyr::filter(neighbor != 'indistinct', reference != 'indistinct')
+
+zsig <- correctZBonferroni(dat_vhck)
+
+vizMutualRelationships(relType = 'enrichment', dat_vhck, dat_ktjk, zsig,
+                       symmetrical = T, dotSizes = c(5, 15))
+vizMutualRelationships(relType = 'depletion', dat_vhck, dat_ktjk, zsig,
+                       symmetrical = T, dotSizes = c(5, 15))
 
 
