@@ -686,15 +686,13 @@ defineRelationshipType <- function(dat, zSigThresh){
 
 
 
-vizMutualRelationships <- function(relType = c('enrichment', 'depletion'), 
-                                   dat1, dat2, 
+vizMutualRelationships <- function(dat1, dat2, 
                                    zSigThresh = 1.96, pSigThresh = NULL,
                                    symmetrical = FALSE, # reorder = FALSE,
                                    onlySignificant = FALSE,
+                                   colors = c('enrichment' = '#009739', 
+                                              'depletion' = '#FEDD00'),
                                    dotSizes = c(6,31)){
-  
-  ## colors
-  rel_color <- c('enrichment' = '#009739', 'depletion' = '#FEDD00')[[relType]]
   
   ## calculate Z score from p-value
   if (!is.null(pSigThresh)) {
@@ -708,8 +706,7 @@ vizMutualRelationships <- function(relType = c('enrichment', 'depletion'),
   ## join
   merged_dat <- dplyr::full_join(dat1, dat2, by = c('neighbor', 'reference'), 
                                  suffix = c('_1', '_2')) %>% 
-    dplyr::mutate(mutual = (relationship_1 == relType) & 
-                    (relationship_2 == relType)) %>% 
+    dplyr::mutate(mutual = (relationship_1 == relationship_2)) %>% 
     dplyr::mutate(mean_scale = (scale_1 + scale_2)/2)
   
   
@@ -744,8 +741,10 @@ vizMutualRelationships <- function(relType = c('enrichment', 'depletion'),
   ## plot
   p <- merged_dat %>% 
     dplyr::filter(mutual == T) %>% 
-    ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, size=mean_scale)) +
-    ggplot2::geom_point(color = rel_color) + 
+    ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, size=mean_scale,
+                                 color = relationship_1)) +
+    ggplot2::geom_point() + 
+    ggplot2::scale_color_manual(values = colors) + 
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
                                                        vjust = 0.5, 
                                                        hjust=1)) +
@@ -759,7 +758,9 @@ vizMutualRelationships <- function(relType = c('enrichment', 'depletion'),
     ggplot2::scale_x_discrete(position = "top") + 
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position='right',
-                   axis.text.x = ggplot2::element_text(angle = 45, h = 0))
+                   axis.text.x = ggplot2::element_text(angle = 45, h = 0)) +
+    ggplot2::labs(color = 'Relationship', size = 'Mean scale')
+    
   
   ## plot all cell types
   if (!onlySignificant) {
@@ -777,16 +778,18 @@ vizMutualRelationships <- function(relType = c('enrichment', 'depletion'),
 
 library(crawdad)
 
-dat_vhck <- readRDS('running_code/processed_data/thymus/dat_vhck_50.RDS') %>% 
-  dplyr::filter(neighbor != 'indistinct', reference != 'indistinct')
-dat_ktjk <- readRDS('running_code/processed_data/thymus/dat_ktjk_50.RDS') %>% 
-  dplyr::filter(neighbor != 'indistinct', reference != 'indistinct')
+dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s2_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
 
-zsig <- correctZBonferroni(dat_vhck)
+zsig <- correctZBonferroni(dat1)
+vizColocDotplot(dat1, zsig, zscoreLimit = 2*zsig, symmetrical = T, 
+                dotSizes = c(5, 15)) + 
+  ggplot2::theme(legend.position='right',
+                 axis.text.x = ggplot2::element_text(angle = 45, h = 0))
 
-vizMutualRelationships(relType = 'enrichment', dat_vhck, dat_ktjk, zsig,
-                       symmetrical = T, dotSizes = c(5, 15))
-vizMutualRelationships(relType = 'depletion', dat_vhck, dat_ktjk, zsig,
+vizMutualRelationships(dat1, dat2, zsig,
                        symmetrical = T, dotSizes = c(5, 15))
 
 
