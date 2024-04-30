@@ -20,7 +20,7 @@ cells <- cells %>%
 
 p <- vizClusters(cells, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#E6E6E6') +
-  coord_fixed() + 
+  # coord_fixed() + 
   theme_minimal()
 p
 
@@ -31,15 +31,27 @@ p
 interest_cts <- c('UBCs', 
                   'Granule')
 interest_ct_colors <- ct_colors[interest_cts]
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = 1) + 
+
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = 1,
+                 ref = 'UBCs', dist = 50) + 
   scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
-  coord_fixed() + 
   theme_minimal()
 p
-pdf('running_code/paper_figures/asymmetry/spatial_plot_ubcs_granule.pdf',
+pdf('running_code/paper_figures/asymmetry/spatial_plot_ubcs_granule_refubcs.pdf',
     height = 7, width = 12)
 p
 dev.off()
+
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = 1,
+                 ref = 'Granule', dist = 50) + 
+  scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
+  theme_minimal()
+p
+pdf('running_code/paper_figures/asymmetry/spatial_plot_ubcs_granule_refgranule.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
 
 
 ## Trend plot --------------------------------------------------------------
@@ -56,7 +68,7 @@ p <- dat_50 %>%
   filter(neighbor == 'Granule') %>% 
   vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
 p
-pdf('running_code/paper_figures/asymmetry/trend_refUBCs_neighGranule.pdf',
+pdf('running_code/paper_figures/asymmetry/trend_refubcs_neighgranule.pdf',
     height = 4, width = 5)
 p
 dev.off()
@@ -65,7 +77,7 @@ p <- dat_50 %>%
   filter(neighbor == 'UBCs') %>% 
   vizTrends(lines = TRUE, withPerms = TRUE, sig.thresh = zsig)
 p
-pdf('running_code/paper_figures/asymmetry/trend_refGranule_neighUBCs.pdf',
+pdf('running_code/paper_figures/asymmetry/trend_refgranule_neighubcs.pdf',
     height = 4, width = 5)
 p
 dev.off()
