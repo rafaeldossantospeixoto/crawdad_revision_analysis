@@ -32,7 +32,7 @@ interest_cts <- c('UBCs',
                   'Granule')
 interest_ct_colors <- ct_colors[interest_cts]
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = 1,
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .5,
                  ref = 'UBCs', dist = 50) + 
   scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
   theme_minimal()
@@ -42,7 +42,7 @@ pdf('running_code/paper_figures/asymmetry/spatial_plot_ubcs_granule_refubcs.pdf'
 p
 dev.off()
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = 1,
+p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .5,
                  ref = 'Granule', dist = 50) + 
   scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
   theme_minimal()
