@@ -100,6 +100,9 @@ plotProportions(cells, dist = 250)
 
 # Paper figures -----------------------------------------------------------
 
+
+## Cerebellum --------------------------------------------------------------
+
 data('slide')
 cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 
@@ -112,6 +115,60 @@ for (d in c(10, 50, 100, 250)){
   print(p)
   dev.off()
 }
+
+
+
+## Embryo ------------------------------------------------------------------
+
+data('seq')
+cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
+
+for (d in c(10, 50, 100, 250)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'seq_', d, '.pdf'),
+      height = 7, width = 8)
+  print(p)
+  dev.off()
+}
+
+
+
+## Sim ------------------------------------------------------------------
+
+data('sim')
+cells <- crawdad::toSF(pos = sim[,c("x", "y")], celltypes = sim$celltypes)
+
+for (d in c(10, 50, 100, 250)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'sim_', d, '.pdf'),
+      height = 7, width = 8)
+  print(p)
+  dev.off()
+}
+
+
+
+## Pkhl ------------------------------------------------------------------
+
+data('pkhl')
+cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
+
+for (d in c(10, 50, 100)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'pkhl_', d, '.pdf'),
+      height = 7, width = 8)
+  print(p)
+  dev.off()
+}
+
+
+
 
 
 
