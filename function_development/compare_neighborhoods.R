@@ -1,13 +1,105 @@
 library(crawdad)
-library(tidyverse)
-## load the spleen data of the pkhl sample 
-data('pkhl')
-## convert dataframe to spatial points (SP)
-cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
-
+# library(tidyverse)
 
 # Compare neighborhoods ---------------------------------------------------
 
+
+#' Calculate proportions of cell types inside the neighborhood
+#' 
+#' For a reference cell type and neighborhood distance, calculate the 
+#' proportion of each neighbor cell type inside the neighborhood of the reference
+#' cell type at that distance.
+#' 
+#' @param cells sf data.frame; as produced by crawdad::toSF function: cells with 
+#' cell types annotated in the celltypes column and point positions in the 
+#' geometry column
+#' @param ref character; reference cell type to define neighborhood around
+#' @param dist numeric vector; distances used to define the neighborhoods
+#' 
+#' @return named vector; 
+calculateProportions <- function(cells, ref, dist) {
+  ## create a circle around each reference cell 
+  neighborhood <- sf::st_buffer(cells[cells$celltypes == ref,], dist) 
+  ## merge the circles into a neighborhood (can take some time to compute)
+  # neighborhood <- sf::st_union(buffer)
+  ## calculate cells inside the neighborhood
+  neighbor_cells <- sf::st_intersection(cells, neighborhood)
+  ## remove duplicates
+  self_cells <- cells[cells$celltypes == ref, ]
+  neighbor_cells <- neighbor_cells[setdiff(rownames(neighbor_cells), 
+                                           rownames(self_cells)), ]
+  ## hack to accommodate self cells that are neighbors of another self cell
+  neighbor_cells <- neighbor_cells[intersect(rownames(neighbor_cells), 
+                                             c(rownames(cells), 
+                                               paste0(rownames(self_cells), '.1'))), ]
+  ## calculate proportions
+  proportions <- as.vector(round(100*table(neighbor_cells$celltypes)/table(cells$celltypes), 2))
+  names(proportions) <- names(round(100*table(neighbor_cells$celltypes)/table(cells$celltypes), 2))
+  
+  return(proportions)
+}
+
+
+
+#' Compare neighborhoods
+#' 
+#' For a reference cell type and different neighborhood distances, plot the 
+#' proportion of each neighbor cell type inside the neighborhood of the reference
+#' cell type at those distances.
+#' 
+#' @param cells sf data.frame; as produced by crawdad::toSF function: cells with 
+#' cell types annotated in the celltypes column and point positions in the 
+#' geometry column
+#' @param dist numeric; distance used to define the neighborhood
+#' @param dotSize numeric; size of the dot
+#' 
+#' @return ggplot2 plot; the proportion of each neighbor cell type for the 
+#' reference cell types, given a distance
+#' 
+#' @export
+plotProportions <- function(cells, dist, dotSize = 5) {
+  
+  ## for each cell type
+  celltypes <- unique(cells$celltypes)
+  props <- lapply(celltypes, calculateProportions, cells = cells, dist = dist)
+  df <- dplyr::bind_rows(props) %>% 
+    dplyr::mutate(reference = celltypes) %>% 
+    tidyr::pivot_longer(!reference, names_to = 'neighbor', values_to = 'proportion')
+  
+  df %>% 
+    ggplot2::ggplot() +
+    ggplot2::geom_point(ggplot2::aes(x = reference, y = neighbor, 
+                                     color = proportion), size = dotSize) +
+    ggplot2::scale_colour_gradient(low = 'white', high = '#006437',
+                                   limits = c(0, 100)) +
+    ggplot2::scale_x_discrete(position = 'top') +
+    ggplot2::theme_bw() + 
+    ggplot2::theme(legend.position = 'right',
+                   axis.text.x = ggplot2::element_text(angle = 45, h = 0))
+}
+
+
+
+
+
+## Test --------------------------------------------------------------------
+
+data('slide')
+cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
+ref <- 'Bergmann'
+dist <- 50
+
+calculateProportions(cells, ref, dist)
+
+plotProportions(cells, dist = 10)
+plotProportions(cells, dist = 50)
+plotProportions(cells, dist = 100)
+plotProportions(cells, dist = 250)
+
+
+
+
+# Deprecated --------------------------------------------------------------
 
 #' Compare neighborhoods
 #' 
@@ -50,51 +142,6 @@ compareNeighborhoods <- function(cells, reference, distances) {
     ggplot2::theme_minimal()
 }
 
-## Podoplanin
-reference <- 'Podoplanin'
-distances <- c(25, 50, 75, 100, 150, 200, 300, 400, 500)
-it <- Sys.time()
-plt_distances <- compareNeighborhoods(cells, reference, distances)
-Sys.time() - it
-## Time difference of 7.18728 mins
-plt_distances
-
-## use geom_text_repel
-end_points <- df_distances %>%
-  group_by(celltypes) %>%
-  summarize(distances = last(distances), proportions = last(proportions))
-plt_distances + 
-  ggrepel::geom_text_repel(data = end_points, 
-                           ggplot2::aes(x = distances, y = proportions, label = celltypes), 
-                           box.padding = 0.5)
-
-## Fol B cells
-reference <- 'Fol B cells'
-distances <- c(25, 50, 75, 100, 150, 200, 300, 400, 500)
-it <- Sys.time()
-plt_distances <- compareNeighborhoods(cells, reference, distances)
-Sys.time() - it
-## Time difference of 27.20221 mins
-plt_distances
-
-## CD8 Memory T cells
-reference <- 'CD8 Memory T cells'
-distances <- c(25, 50, 75, 100, 150, 200, 300, 400, 500)
-it <- Sys.time()
-plt_distances <- compareNeighborhoods(cells, reference, distances)
-Sys.time() - it
-## Time difference of 26.67759 mins
-plt_distances
-
-## Sinusoidal cells
-reference <- 'Sinusoidal cells'
-distances <- c(25, 50, 75, 100, 150, 200, 300, 400, 500)
-it <- Sys.time()
-plt_distances <- compareNeighborhoods(cells, reference, distances)
-Sys.time() - it
-## Time difference of 21.73519 mins
-plt_distances
-
 
 # Run CRAWDAD -------------------------------------------------------------
 
@@ -114,11 +161,11 @@ shuffle.list_pkhl <- crawdad:::makeShuffledCells(cells_pkhl,
 ## 100 ---------------------------------------------------------------------
 
 results_pkhl_100 <- crawdad::findTrends(cells_pkhl,
-                               dist = 100,
-                               shuffle.list = shuffle.list_pkhl,
-                               ncores = ncores,
-                               verbose = TRUE,
-                               returnMeans = FALSE)
+                                        dist = 100,
+                                        shuffle.list = shuffle.list_pkhl,
+                                        ncores = ncores,
+                                        verbose = TRUE,
+                                        returnMeans = FALSE)
 ## Time was 38.81 mins
 saveRDS(results_pkhl_100, 'function_development/spleen/results_pkhl_100.RDS')
 
@@ -141,4 +188,3 @@ results_pkhl_100 <- crawdad::findTrends(cells_pkhl,
                                         returnMeans = FALSE)
 ## Time was too long, I gave up
 saveRDS(results_pkhl_100, 'function_development/spleen/results_pkhl_37.RDS')
-
