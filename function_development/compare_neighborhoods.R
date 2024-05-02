@@ -98,6 +98,24 @@ plotProportions(cells, dist = 250)
 
 
 
+# Paper figures -----------------------------------------------------------
+
+data('slide')
+cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
+
+for (d in c(10, 50, 100, 250)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'slide_', d, '.pdf'),
+      height = 7, width = 8)
+  print(p)
+  dev.off()
+}
+
+
+
+
 
 # Deprecated --------------------------------------------------------------
 
