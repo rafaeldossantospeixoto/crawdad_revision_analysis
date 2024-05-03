@@ -72,10 +72,10 @@ plotProportions <- function(cells, dist, dotSize = 5) {
                                      color = proportion), size = dotSize) +
     ggplot2::scale_colour_gradient(low = 'white', high = '#006437',
                                    limits = c(0, 100)) +
-    ggplot2::scale_x_discrete(position = 'top') +
+    ggplot2::scale_x_discrete(position = 'bottom') +
     ggplot2::theme_bw() + 
     ggplot2::theme(legend.position = 'right',
-                   axis.text.x = ggplot2::element_text(angle = 45, h = 0))
+                   axis.text.x = ggplot2::element_text(angle = 45, h = 1))
 }
 
 
@@ -89,7 +89,7 @@ cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 ref <- 'Bergmann'
 dist <- 50
 
-calculateProportions(cells, ref, dist)
+calculateProportions(cells, ref, dist) 
 
 plotProportions(cells, dist = 10)
 plotProportions(cells, dist = 50)
@@ -106,7 +106,7 @@ plotProportions(cells, dist = 250)
 data('slide')
 cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 
-for (d in c(10, 50, 100, 250)){
+for (d in c(10, 50, 100)){
   p <- plotProportions(cells, dist = d)
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
@@ -123,7 +123,7 @@ for (d in c(10, 50, 100, 250)){
 data('seq')
 cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
 
-for (d in c(10, 50, 100, 250)){
+for (d in c(10, 50, 100)){
   p <- plotProportions(cells, dist = d)
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
@@ -140,7 +140,7 @@ for (d in c(10, 50, 100, 250)){
 data('sim')
 cells <- crawdad::toSF(pos = sim[,c("x", "y")], celltypes = sim$celltypes)
 
-for (d in c(10, 50, 100, 250)){
+for (d in c(10, 50, 100)){
   p <- plotProportions(cells, dist = d)
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
@@ -157,7 +157,7 @@ for (d in c(10, 50, 100, 250)){
 data('pkhl')
 cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
 
-for (d in c(10, 50, 100, 250)){
+for (d in c(10, 50, 100)){
   p <- plotProportions(cells, dist = d)
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
