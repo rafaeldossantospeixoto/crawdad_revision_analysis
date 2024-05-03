@@ -157,7 +157,7 @@ for (d in c(10, 50, 100, 250)){
 data('pkhl')
 cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
 
-for (d in c(10, 50, 100)){
+for (d in c(10, 50, 100, 250)){
   p <- plotProportions(cells, dist = d)
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
