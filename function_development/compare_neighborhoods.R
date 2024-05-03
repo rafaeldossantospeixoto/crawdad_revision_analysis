@@ -75,7 +75,8 @@ plotProportions <- function(cells, dist, dotSize = 5) {
     ggplot2::scale_x_discrete(position = 'bottom') +
     ggplot2::theme_bw() + 
     ggplot2::theme(legend.position = 'right',
-                   axis.text.x = ggplot2::element_text(angle = 45, h = 1))
+                   axis.text.x = ggplot2::element_text(angle = 45, h = 1)) + 
+    ggplot2::coord_equal()
 }
 
 
@@ -91,7 +92,8 @@ dist <- 50
 
 calculateProportions(cells, ref, dist) 
 
-plotProportions(cells, dist = 10)
+plotProportions(cells, dist = 10) + 
+  ggplot2::coord_equal()
 plotProportions(cells, dist = 50)
 plotProportions(cells, dist = 100)
 plotProportions(cells, dist = 250)
@@ -107,7 +109,8 @@ data('slide')
 cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 
 for (d in c(10, 50, 100)){
-  p <- plotProportions(cells, dist = d)
+  p <- plotProportions(cells, dist = d) + 
+    ggplot2::coord_equal()
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
              'slide_', d, '.pdf'),
@@ -124,7 +127,8 @@ data('seq')
 cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
 
 for (d in c(10, 50, 100)){
-  p <- plotProportions(cells, dist = d)
+  p <- plotProportions(cells, dist = d) + 
+    ggplot2::coord_equal()
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
              'seq_', d, '.pdf'),
@@ -141,7 +145,8 @@ data('sim')
 cells <- crawdad::toSF(pos = sim[,c("x", "y")], celltypes = sim$celltypes)
 
 for (d in c(10, 50, 100)){
-  p <- plotProportions(cells, dist = d)
+  p <- plotProportions(cells, dist = d) + 
+    ggplot2::coord_equal()
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
              'sim_', d, '.pdf'),
@@ -158,7 +163,8 @@ data('pkhl')
 cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
 
 for (d in c(10, 50, 100)){
-  p <- plotProportions(cells, dist = d)
+  p <- plotProportions(cells, dist = d) + 
+    ggplot2::coord_equal()
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
              'pkhl_', d, '.pdf'),
