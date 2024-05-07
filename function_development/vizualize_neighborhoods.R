@@ -138,7 +138,7 @@ for (d in c(10, 50, 100)){
     theme_minimal()
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
-             'seq_neutrophilsmonocytes_', d, '.pdf'),
+             'pkhl_neutrophilsmonocytes_', d, '.pdf'),
       height = 7, width = 12)
   print(p)
   dev.off()
