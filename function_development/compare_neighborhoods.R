@@ -75,7 +75,7 @@ plotProportions <- function(cells, dist, dotSize = 5) {
     ggplot2::scale_x_discrete(position = 'bottom') +
     ggplot2::theme_bw() + 
     ggplot2::theme(legend.position = 'right',
-                   axis.text.x = ggplot2::element_text(angle = 45, h = 1)) + 
+                   axis.text.x = ggplot2::element_text(angle = 90, h = 1)) + 
     ggplot2::coord_equal()
 }
 
