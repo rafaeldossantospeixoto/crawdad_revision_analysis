@@ -37,14 +37,14 @@ p
 
 
 for (d in c(10, 50, 100)){
-  p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .5,
+  p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .001,
                    ref = 'Granule', dist = d) + 
     scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
     theme_minimal()
   print(p)
   pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
              'slide_granule_', d, '.pdf'),
-      height = 7, width = 12)
+      height = 2, width = 4)
   print(p)
   dev.off()
 }

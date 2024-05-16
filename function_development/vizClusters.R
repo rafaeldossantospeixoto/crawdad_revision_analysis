@@ -69,7 +69,7 @@ vizClusters <- function(cells, ofInterest = NULL,
     ## add to plot
     plt <- plt +
       ggplot2::geom_sf(data = neighborhood, fill = NA, 
-                       color = 'black', linewidth = .5)
+                       color = 'black', linewidth = .001)
   }
   
   ## add labels
