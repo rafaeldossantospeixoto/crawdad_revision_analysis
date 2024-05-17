@@ -1,5 +1,221 @@
+# Functions ---------------------------------------------------------------
 
-# Dotplots comparing ------------------------------------------------------
+#' Define Relationship Type
+#' 
+#' @description
+#' Define the type of relationship based on the Z score (enrichment or 
+#' depletion).
+#' 
+#' @param dat `findTrends()` data.frame; the information about the scale, 
+#' Z-score, reference and the neighbor cell. The input data.frame should be the 
+#' results list from `findTrends()` that has been melted into a data.frame 
+#' using `meltResultsList()`.
+#' @param zSigThresh numeric; the Z score significance threshold (default: 1.96).
+#' 
+defineRelationshipType <- function(dat, zSigThresh){
+  dat <- dat %>% 
+    dplyr::group_by(neighbor, scale, reference) %>% 
+    dplyr::summarize(Z = mean(Z)) %>% 
+    dplyr::filter(abs(Z) >= zSigThresh) %>% 
+    dplyr::group_by(neighbor, reference) %>% 
+    dplyr::filter(scale == min(scale, na.rm = TRUE)) %>% 
+    dplyr::mutate(relationship = dplyr::case_when(Z > 0 ~ 'enrichment',
+                                                  Z < 0 ~ 'depletion',
+                                                  T ~ 'other')) %>% 
+    dplyr::mutate(enrichment = (relationship == 'enrichment'),
+                  depletion = (relationship == 'depletion'))
+  return(dat)
+}
+
+
+
+joinDats <- function(dats) {
+  
+  all_cts <- unique(unlist(lapply(dats, function(dat){unique(dat$reference)})))
+  n_samples <- length(dats)
+  
+  merged_dat <- expand.grid(reference = all_cts, neighbor = all_cts) %>% 
+    dplyr::mutate(n_enrichment = 0,
+                  n_depletion = 0, 
+                  sum_scale_enrichment = 0,
+                  sum_scale_depletion = 0)
+  
+  for (dat in dats) {
+    merged_dat <- dplyr::full_join(merged_dat, dat, 
+                                   by = c('neighbor', 'reference')) %>% 
+      dplyr::mutate(n_enrichment = n_enrichment + 
+                      dplyr::coalesce(enrichment, 0)) %>%
+      dplyr::mutate(n_depletion = n_depletion + 
+                      dplyr::coalesce(depletion, 0)) %>%
+      dplyr::mutate(sum_scale_enrichment = sum_scale_enrichment + 
+                      ifelse(enrichment, dplyr::coalesce(scale, 0), 0)) %>%
+      dplyr::mutate(sum_scale_depletion = sum_scale_depletion + 
+                      ifelse(depletion, dplyr::coalesce(scale, 0), 0)) %>%
+      dplyr::select(-scale, -Z, -relationship, -enrichment, -depletion)
+  }
+  
+  merged_dat <- merged_dat %>% 
+    dplyr::mutate(mean_scale_enrichment = sum_scale_enrichment / n_enrichment,
+                  mean_scale_depletion = sum_scale_depletion / n_depletion) %>% 
+    dplyr::mutate(mode_relationship_type = 
+                    dplyr::case_when(n_enrichment > n_depletion ~ 'enrichment',
+                                     n_enrichment < n_depletion ~ 'depletion',
+                                     T ~ 'equal'), 
+                  n_mode_relationship_type = 
+                    dplyr::case_when(n_enrichment > n_depletion ~ n_enrichment,
+                                     n_enrichment < n_depletion ~ n_depletion,
+                                     T ~ n_enrichment), 
+                  mean_scale_mode_relationship_type = 
+                    dplyr::case_when(n_enrichment > n_depletion ~ mean_scale_enrichment,
+                                     n_enrichment < n_depletion ~ mean_scale_depletion,
+                                     T ~ (coalesce(mean_scale_enrichment, 0) + 
+                                            (coalesce(mean_scale_depletion, 0)) / 2)) %>% 
+                    dplyr::mutate(pct_mode_relationship_type = 100 * n_mode_relationship_type / n_samples)
+                  
+                  return(merged_dat)
+}
+
+
+
+vizMutualRelationships <- function(dats, 
+                                   zSigThresh = 1.96, pSigThresh = NULL,
+                                   symmetrical = FALSE, # reorder = FALSE,
+                                   pctSignificance = 1,
+                                   onlySignificant = FALSE,
+                                   colors = c('enrichment' = '#009739', 
+                                              'equal' = '#7FBA1D',
+                                              'depletion' = '#FEDD00'), # '#012169'
+                                   dotSizes = c(6, 31)){
+  
+  ## calculate Z score from p-value
+  if (!is.null(pSigThresh)) {
+    zSigThresh = round(qnorm(pSigThresh/2, lower.tail = F), 2)
+  }
+  
+  ## define relationship type
+  dats <- lapply(dats, defineRelationshipType, zSigThresh = zSigThresh)
+  
+  ## join
+  merged_dat <- joinDats(dats)
+  
+  ## scale sizes
+  lsizes <- sort(merged_dat$mean_scale_mode_relationship_type)
+  legend_sizes <- c(lsizes[1],
+                    round(mean(c(lsizes[1], lsizes[length(lsizes)]))),
+                    lsizes[length(lsizes)])
+  
+  ## highlight symmetrical
+  if (symmetrical) {
+    ## create pairs
+    pairs <- lapply(1:dim(merged_dat)[1], function(i){
+      paste(sort(c(gsub(" ", "", df_pairs[i, 'reference']), 
+                   gsub(" ", "", df_pairs[i, 'neighbor']))), 
+            collapse = '_')
+    })
+    df_pairs <- merged_dat %>% 
+      dplyr::mutate(pair = pairs)
+    ## calculate the if the amount of times a relationship appears for a pair
+    ## is one, 
+    df_same_type <- df_pairs %>% 
+      dplyr::group_by(pair) %>% 
+      ## check if the type is not different for each ref of the pair and
+      ## check if there are two relationships by checking distinct references
+      dplyr::summarise(same_type = 
+                         (dplyr::n_distinct(mode_relationship_type) == 1) & 
+                         (dplyr::n_distinct(reference) == 2) & 
+                         (sum(n_mode_relationship_type) > 0))
+    ## merge to reorder
+    df_pairs <- df_pairs %>% 
+      dplyr::left_join(df_same_type, by = 'pair')
+    ## check if pairs are duplicate
+    symmetrical_same_relationships <- df_pairs$same_type
+    merged_dat$symmetrical <- symmetrical_same_relationships
+  }
+  
+  ## plot
+  p <- merged_dat %>% 
+    dplyr::filter(pct_mode_relationship_type >= pctSignificance) %>% 
+    ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, 
+                                 size=mean_scale_mode_relationship_type,
+                                 color = mode_relationship_type)) +
+    ggplot2::geom_point() + 
+    ggplot2::scale_color_manual(values = colors) + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
+                                                       vjust = 0.5, 
+                                                       hjust = 1)) +
+    {if (symmetrical) ggplot2::geom_point(data = ~dplyr::filter(.x, symmetrical == T),
+                                          ggplot2::aes(x=reference, y=neighbor),
+                                          shape = 18, color = 'purple', 
+                                          size = 2*dotSizes[1]/3)} + 
+    ggplot2::scale_radius(trans = 'reverse',
+                          breaks = legend_sizes,
+                          range = dotSizes) + 
+    ggplot2::scale_x_discrete(position = "top") + 
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position='right',
+                   axis.text.x = ggplot2::element_text(angle = 45, h = 0)) +
+    ggplot2::labs(color = 'Relationship', size = 'Mean scale')
+  
+  
+  ## plot all cell types
+  if (!onlySignificant) {
+    all_cts <- sort(unique(unlist(sapply(dats, function(dat){unique(dat$reference)}))))
+    p <- p +
+      ggplot2::scale_x_discrete(limits = all_cts, position = 'top') +
+      ggplot2::scale_y_discrete(limits = all_cts) 
+  }
+  
+  return(p)
+}
+
+
+# Testing -----------------------------------------------------------------
+
+library(crawdad)
+
+dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s2_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dats <- list(dat1, dat2)
+
+zsig <- correctZBonferroni(dat1)
+# vizColocDotplot(dat1, zsig, zscoreLimit = 2*zsig, symmetrical = T,
+#                 dotSizes = c(5, 15)) +
+#   ggplot2::theme(legend.position='right',
+#                  axis.text.x = ggplot2::element_text(angle = 45, h = 0))
+
+vizMutualRelationships(dats, zSigThresh =  zsig,
+                       symmetrical = T, dotSizes = c(5, 15))
+
+## S*R1
+dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s2_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dat3 <- readRDS('running_code/outputs/merfish_mouseBrain_s3_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dats <- list(dat1, dat2, dat3)
+vizMutualRelationships(dats, zSigThresh =  zsig,
+                       symmetrical = T, dotSizes = c(3, 13))
+
+## S1R*
+dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r2_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dat3 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE)
+dats <- list(dat1, dat2, dat3)
+vizMutualRelationships(dats, zSigThresh =  zsig,
+                       symmetrical = T, dotSizes = c(3, 13))
+
+
+
+
+# Deprecated --------------------------------------------------------------
+
+## Dotplots comparing ------------------------------------------------------
 
 
 
@@ -525,10 +741,10 @@ selectSigDat <- function(dat, zsig.thresh, zscore.limit = NULL){
 
 
 
-# Compare mutual relationships --------------------------------------------
+## Compare mutual relationships --------------------------------------------
 
 
-## Draft -------------------------------------------------------------------
+### Draft -------------------------------------------------------------------
 
 library(tidyverse)
 library(crawdad)
@@ -588,7 +804,7 @@ dat_vhck <- dat_vhck %>%
                                          T ~ 'other'))
 
 
-### Enrichment --------------------------------------------------------------
+#### Enrichment --------------------------------------------------------------
 
 ## join
 samples <- c('_ktjk', '_vhck')
@@ -625,7 +841,7 @@ merged_dat %>%
 
 
 
-### Depletion ---------------------------------------------------------------
+#### Depletion ---------------------------------------------------------------
 
 ## join
 samples <- c('_ktjk', '_vhck')
@@ -661,214 +877,3 @@ merged_dat %>%
         axis.text.x = element_text(angle = 45, h = 0))
 
 
-# Functions ---------------------------------------------------------------
-
-#' Define Relationship Type
-#' 
-#' @description
-#' Define the type of relationship based on the Z score (enrichment or 
-#' depletion).
-#' 
-#' @param dat `findTrends()` data.frame; the information about the scale, 
-#' Z-score, reference and the neighbor cell. The input data.frame should be the 
-#' results list from `findTrends()` that has been melted into a data.frame 
-#' using `meltResultsList()`.
-#' @param zSigThresh numeric; the Z score significance threshold (default: 1.96).
-#' 
-defineRelationshipType <- function(dat, zSigThresh){
-  dat <- dat %>% 
-    dplyr::group_by(neighbor, scale, reference) %>% 
-    dplyr::summarize(Z = mean(Z)) %>% 
-    dplyr::filter(abs(Z) >= zSigThresh) %>% 
-    dplyr::group_by(neighbor, reference) %>% 
-    dplyr::filter(scale == min(scale, na.rm = TRUE)) %>% 
-    dplyr::mutate(relationship = dplyr::case_when(Z > 0 ~ 'enrichment',
-                                                  Z < 0 ~ 'depletion',
-                                                  T ~ 'other')) %>% 
-    dplyr::mutate(enrichment = (relationship == 'enrichment'),
-                  depletion = (relationship == 'depletion'))
-  return(dat)
-}
-
-
-
-joinDats <- function(dats) {
-  
-  all_cts <- unique(unlist(lapply(dats, function(dat){unique(dat$reference)})))
-  n_samples <- length(dats)
-  
-  merged_dat <- expand.grid(reference = all_cts, neighbor = all_cts) %>% 
-    dplyr::mutate(n_enrichment = 0,
-                  n_depletion = 0, 
-                  sum_scale_enrichment = 0,
-                  sum_scale_depletion = 0)
-  
-  for (dat in dats) {
-    merged_dat <- dplyr::full_join(merged_dat, dat, 
-                                   by = c('neighbor', 'reference')) %>% 
-      dplyr::mutate(n_enrichment = n_enrichment + 
-                      dplyr::coalesce(enrichment, 0)) %>%
-      dplyr::mutate(n_depletion = n_depletion + 
-                      dplyr::coalesce(depletion, 0)) %>%
-      dplyr::mutate(sum_scale_enrichment = sum_scale_enrichment + 
-                      ifelse(enrichment, dplyr::coalesce(scale, 0), 0)) %>%
-      dplyr::mutate(sum_scale_depletion = sum_scale_depletion + 
-                      ifelse(depletion, dplyr::coalesce(scale, 0), 0)) %>%
-      dplyr::select(-scale, -Z, -relationship, -enrichment, -depletion)
-  }
-  
-  merged_dat <- merged_dat %>% 
-    dplyr::mutate(mean_scale_enrichment = sum_scale_enrichment / n_enrichment,
-                  mean_scale_depletion = sum_scale_depletion / n_depletion) %>% 
-    dplyr::mutate(mode_relationship_type = 
-                    dplyr::case_when(n_enrichment > n_depletion ~ 'enrichment',
-                                     n_enrichment < n_depletion ~ 'depletion',
-                                     T ~ 'equal'), 
-                  n_mode_relationship_type = 
-                    dplyr::case_when(n_enrichment > n_depletion ~ n_enrichment,
-                                     n_enrichment < n_depletion ~ n_depletion,
-                                     T ~ n_enrichment), 
-                  mean_scale_mode_relationship_type = 
-                    dplyr::case_when(n_enrichment > n_depletion ~ mean_scale_enrichment,
-                                     n_enrichment < n_depletion ~ mean_scale_depletion,
-                                     T ~ (coalesce(mean_scale_enrichment, 0) + 
-                                            (coalesce(mean_scale_depletion, 0)) / 2)) %>% 
-    dplyr::mutate(pct_mode_relationship_type = 100 * n_mode_relationship_type / n_samples)
-  
-  return(merged_dat)
-}
-
-
-
-vizMutualRelationships <- function(dats, 
-                                   zSigThresh = 1.96, pSigThresh = NULL,
-                                   symmetrical = FALSE, # reorder = FALSE,
-                                   pctSignificance = 1,
-                                   onlySignificant = FALSE,
-                                   colors = c('enrichment' = '#009739', 
-                                              'equal' = '#7FBA1D',
-                                              'depletion' = '#FEDD00'), # '#012169'
-                                   dotSizes = c(6, 31)){
-  
-  ## calculate Z score from p-value
-  if (!is.null(pSigThresh)) {
-    zSigThresh = round(qnorm(pSigThresh/2, lower.tail = F), 2)
-  }
-  
-  ## define relationship type
-  dats <- lapply(dats, defineRelationshipType, zSigThresh = zSigThresh)
-  
-  ## join
-  merged_dat <- joinDats(dats)
-  
-  ## scale sizes
-  lsizes <- sort(merged_dat$mean_scale_mode_relationship_type)
-  legend_sizes <- c(lsizes[1],
-                    round(mean(c(lsizes[1], lsizes[length(lsizes)]))),
-                    lsizes[length(lsizes)])
-  
-  ## highlight symmetrical
-  if (symmetrical) {
-    ## create pairs
-    pairs <- lapply(1:dim(merged_dat)[1], function(i){
-      paste(sort(c(gsub(" ", "", df_pairs[i, 'reference']), 
-                   gsub(" ", "", df_pairs[i, 'neighbor']))), 
-            collapse = '_')
-    })
-    df_pairs <- merged_dat %>% 
-      dplyr::mutate(pair = pairs)
-    ## calculate the if the amount of times a relationship appears for a pair
-    ## is one, 
-    df_same_type <- df_pairs %>% 
-      dplyr::group_by(pair) %>% 
-      ## check if the type is not different for each ref of the pair and
-      ## check if there are two relationships by checking distinct references
-      dplyr::summarise(same_type = 
-                         (dplyr::n_distinct(mode_relationship_type) == 1) & 
-                         (dplyr::n_distinct(reference) == 2) & 
-                         (sum(n_mode_relationship_type) > 0))
-    ## merge to reorder
-    df_pairs <- df_pairs %>% 
-      dplyr::left_join(df_same_type, by = 'pair')
-    ## check if pairs are duplicate
-    symmetrical_same_relationships <- df_pairs$same_type
-    merged_dat$symmetrical <- symmetrical_same_relationships
-  }
-  
-  ## plot
-  p <- merged_dat %>% 
-    dplyr::filter(pct_mode_relationship_type >= pctSignificance) %>% 
-    ggplot2::ggplot(ggplot2::aes(x=reference, y=neighbor, 
-                                 size=mean_scale_mode_relationship_type,
-                                 color = mode_relationship_type)) +
-    ggplot2::geom_point() + 
-    ggplot2::scale_color_manual(values = colors) + 
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, 
-                                                       vjust = 0.5, 
-                                                       hjust = 1)) +
-    {if (symmetrical) ggplot2::geom_point(data = ~dplyr::filter(.x, symmetrical == T),
-                                        ggplot2::aes(x=reference, y=neighbor),
-                                        shape = 18, color = 'purple', 
-                                        size = 2*dotSizes[1]/3)} + 
-    ggplot2::scale_radius(trans = 'reverse',
-                          breaks = legend_sizes,
-                          range = dotSizes) + 
-    ggplot2::scale_x_discrete(position = "top") + 
-    ggplot2::theme_bw() +
-    ggplot2::theme(legend.position='right',
-                   axis.text.x = ggplot2::element_text(angle = 45, h = 0)) +
-    ggplot2::labs(color = 'Relationship', size = 'Mean scale')
-    
-  
-  ## plot all cell types
-  if (!onlySignificant) {
-    all_cts <- sort(unique(unlist(sapply(dats, function(dat){unique(dat$reference)}))))
-    p <- p +
-      ggplot2::scale_x_discrete(limits = all_cts, position = 'top') +
-      ggplot2::scale_y_discrete(limits = all_cts) 
-  }
-  
-  return(p)
-}
-
-
-# Testing -----------------------------------------------------------------
-
-library(crawdad)
-
-dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s2_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dats <- list(dat1, dat2)
-
-zsig <- correctZBonferroni(dat1)
-# vizColocDotplot(dat1, zsig, zscoreLimit = 2*zsig, symmetrical = T,
-#                 dotSizes = c(5, 15)) +
-#   ggplot2::theme(legend.position='right',
-#                  axis.text.x = ggplot2::element_text(angle = 45, h = 0))
-
-vizMutualRelationships(dats, zSigThresh =  zsig,
-                       symmetrical = T, dotSizes = c(5, 15))
-
-## S*R1
-dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s2_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dat3 <- readRDS('running_code/outputs/merfish_mouseBrain_s3_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dats <- list(dat1, dat2, dat3)
-vizMutualRelationships(dats, zSigThresh =  zsig,
-                       symmetrical = T, dotSizes = c(3, 13))
-
-## S1R*
-dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r2_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dat3 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dist_50.RDS') %>% 
-  crawdad::meltResultsList(withPerms = TRUE)
-dats <- list(dat1, dat2, dat3)
-vizMutualRelationships(dats, zSigThresh =  zsig,
-                       symmetrical = T, dotSizes = c(3, 13))
