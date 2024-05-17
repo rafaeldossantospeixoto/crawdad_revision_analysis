@@ -25,7 +25,12 @@ readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dis
 ## there are nan Z-scores for some of the scales, so the auc is nan
 
 
-# Substitute NaNs for 0 ---------------------------------------------------
+
+
+# Reduced dimension -------------------------------------------------------
+
+
+## Substitute NaNs for 0 ---------------------------------------------------
 
 ## I will substitute the NaNs for 0, just to try
 ## read auc data
@@ -60,7 +65,7 @@ pcs %>%
 
 
 
-# Drop pairs with NaNs ---------------------------------------------------
+## Drop pairs with NaNs ---------------------------------------------------
 
 ## read auc data
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
@@ -99,7 +104,7 @@ dev.off()
 
 
 
-# Standardize and drop pairs with NaNs ------------------------------------
+## Standardize and drop pairs with NaNs ------------------------------------
 
 ## read auc data
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
@@ -139,3 +144,42 @@ pdf(paste0('function_development/comparing_samples/paper_figures/',
     height = 5, width = 7)
 p
 dev.off()
+
+
+
+
+
+# Variance ----------------------------------------------------------------
+
+
+# Drop NaNs ---------------------------------------------------------------
+
+## read auc data
+auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
+auc <- auc %>% 
+  drop_na()
+
+## all samples
+auc %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(variance = var(auc)) %>%
+  ggplot() +
+  geom_point(aes(x = reference, y = neighbor, size = variance)) +
+  scale_radius(range = c(1, 10)) +
+  theme_bw() +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 1))
+
+## slice and replicate
+auc %>% 
+  filter(replicate == 3) %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(variance = var(auc)) %>%
+  ggplot() +
+  geom_point(aes(x = reference, y = neighbor, size = variance)) +
+  scale_radius(range = c(1, 10),
+               limits=c(1, 4e7),
+               breaks=c(1e7, 2e7, 3e7, 4e7)) +
+  theme_bw() +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 1))
