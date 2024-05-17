@@ -83,11 +83,18 @@ pcs <- pca$x[, 1:2] %>%
   mutate(slice = sapply(rownames(pca$x), 
                         FUN = function(x) str_split(x, 'r')[[1]][1]))
 
-## plot
-pcs %>% 
+p <- pcs %>% 
   ggplot() + 
   geom_point(aes(x = PC1, y = PC2, color = slice)) + 
-  scale_color_manual(values = rainbow(3))
+  scale_color_manual(values = rainbow(3)) +
+  theme_bw() +
+  coord_equal()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_pca.pdf'),
+    height = 5, width = 7)
+p
+dev.off()
 ## still works
 
 
@@ -120,8 +127,15 @@ pcs <- pca$x[, 1:2] %>%
                         FUN = function(x) str_split(x, 'r')[[1]][1]))
 
 ## plot
-pcs %>% 
+p <- pcs %>% 
   ggplot() + 
   geom_point(aes(x = PC1, y = PC2, color = slice)) + 
-  scale_color_manual(values = rainbow(3))
-## still works
+  scale_color_manual(values = rainbow(3)) +
+  theme_bw() +
+  coord_equal()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_pca_standardized.pdf'),
+    height = 5, width = 7)
+p
+dev.off()
