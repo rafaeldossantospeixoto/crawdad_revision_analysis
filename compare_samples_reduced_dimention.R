@@ -89,3 +89,39 @@ pcs %>%
   geom_point(aes(x = PC1, y = PC2, color = slice)) + 
   scale_color_manual(values = rainbow(3))
 ## still works
+
+
+
+# Standardize and drop pairs with NaNs ------------------------------------
+
+## read auc data
+auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
+auc <- auc %>% 
+  mutate(sample = paste0('s', slice, 'r', replicate), 
+         pair = paste0(paste0(reference, ' - ', neighbor))) %>% 
+  select(c(pair, sample, auc))
+auc_mtx <- auc %>% 
+  pivot_wider(names_from = sample, values_from = auc) %>% 
+  select(!pair) %>% 
+  drop_na() %>% ## drop nas
+  as.matrix() %>% 
+  t()
+
+## normalize
+auc_mtx <- scale(auc_mtx)
+apply(auc_mtx, 2, var)
+
+## calculate pca
+pca <- prcomp(auc_mtx)
+pcs <- pca$x[, 1:2] %>% 
+  as.data.frame() %>% 
+  mutate(sample = rownames(pca$x)) %>% 
+  mutate(slice = sapply(rownames(pca$x), 
+                        FUN = function(x) str_split(x, 'r')[[1]][1]))
+
+## plot
+pcs %>% 
+  ggplot() + 
+  geom_point(aes(x = PC1, y = PC2, color = slice)) + 
+  scale_color_manual(values = rainbow(3))
+## still works
