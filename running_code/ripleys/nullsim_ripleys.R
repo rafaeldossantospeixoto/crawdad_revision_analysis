@@ -2,7 +2,7 @@ library(crawdad)
 library(tidyverse)
 library(spatstat)
 
-nullsim <- read.csv(file = 'simulating_data/null_sim/df_nullsim_s0.csv', 
+nullsim <- read.csv(file = 'simulating_data/null_sim/df_nullsim_s1.csv', 
                 row.names = 1)
 head(nullsim)
 
