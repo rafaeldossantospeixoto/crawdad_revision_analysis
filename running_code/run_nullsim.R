@@ -1,11 +1,88 @@
 
+# Dataset seed 1 ----------------------------------------------------------
+
+library(crawdad)
+library(tidyverse)
+
+df1 <- readRDS("simulating_data/null_sim/seed_1/df1.RDS")
+df2 <- readRDS("simulating_data/null_sim/seed_1/df2.RDS")
+
+color_names <- rainbow(4)
+
+
+## df1 ---------------------------------------------------------------------
+
+p <- df1 %>% 
+  ggplot() + 
+  geom_point(aes(x, y, color = values)) + 
+  scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') +
+                        # breaks = c(-3, 0, 3)) + 
+  theme_bw() + 
+  coord_equal()
+p
+pdf('running_code/paper_figures/nullsim/viz_df1_values.pdf')
+p
+dev.off()
+
+p <- df1 %>% 
+  ggplot() + 
+  geom_point(aes(x, y, color = celltypes)) +
+  scale_color_manual(values = color_names[1:2]) + 
+  theme_bw() + 
+  coord_equal()
+p
+pdf('running_code/paper_figures/nullsim/viz_df1_cts.pdf')
+p
+dev.off()
+
+## df2 ---------------------------------------------------------------------
+
+p <- df2 %>% 
+  ggplot() + 
+  geom_point(aes(x, y, color = values)) + 
+  scale_color_gradient2(low = 'blue', mid = 'white', high = 'red') + 
+  theme_bw() + 
+  coord_equal()
+p
+pdf('running_code/paper_figures/nullsim/viz_df2_values.pdf')
+p
+dev.off()
+
+p <- df2 %>% 
+  ggplot() + 
+  geom_point(aes(x, y, color = celltypes)) +
+  scale_color_manual(values = color_names[3:4]) + 
+  theme_bw() + 
+  coord_equal()
+p
+pdf('running_code/paper_figures/nullsim/viz_df2_cts.pdf')
+p
+dev.off()
+
+
+## both --------------------------------------------------------------------
+
+p <- rbind(df1, df2) %>% 
+  ggplot() + 
+  geom_point(aes(x, y, color = celltypes)) +
+  scale_color_manual(values = color_names) + 
+  theme_bw() + 
+  coord_equal()
+p
+pdf('running_code/paper_figures/nullsim/viz_dfs_cts.pdf')
+p
+dev.off()
+
+
+
+
 # Run sim samples ---------------------------------------------------------
 
 library(crawdad)
 library(tidyverse)
 ncores <- 7
 
-cells <- readRDS('simulating_data/null_sim/cells_nullsim_s0.RDS')
+cells <- readRDS('simulating_data/null_sim/cells_nullsim_s1.RDS')
 
 vizClusters(cells)
 
@@ -34,8 +111,8 @@ saveRDS(dat_50, 'running_code/processed_data/dat_nullsim_50.RDS')
 zsig <- correctZBonferroni(dat_50)
 
 ## viz 50
-vizColocDotplot(dat_50, zscore.limit = zsig*2)
-vizColocDotplot(dat_50, zsig.thresh = zsig, zscore.limit = zsig*2)
+vizColocDotplot(dat_50, zScoreLimit = zsig*2)
+vizColocDotplot(dat_50, zSigThresh = zsig, zScoreLimit = zsig*2)
 
 
 

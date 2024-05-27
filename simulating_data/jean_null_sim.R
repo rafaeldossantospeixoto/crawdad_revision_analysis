@@ -90,9 +90,9 @@ dfs <- lapply(1:10, function(s) {
 saveRDS(dfs, 'simulating_data/null_sim/cells_nullsim.RDS')
 
 
-# Seed 0 ------------------------------------------------------------------
+# Seed 1 ------------------------------------------------------------------
 
-s <- 0
+s <- 1
 
 # Set parameters
 set.seed(s)
@@ -166,6 +166,24 @@ scalefactor <- 1000
 cells <- crawdad::toSF(pos = data.frame(locations)*scalefactor, celltypes = as.factor(celltypes))
 
 
+## Create dfs -------------------------------------------------------------
+
+df <- data.frame(locations)*scalefactor
+df1 <- df[vi, ] %>% 
+  mutate(values = Xs1[vi]) %>% 
+  mutate(celltypes = case_when(values > 0 ~ 'A',
+                               values < 0 ~ 'B',
+                               T ~ 'other'))
+df2 <- df[vi2, ] %>% 
+  mutate(values = Xs2[vi2]) %>% 
+  mutate(celltypes = case_when(values > 0 ~ 'C',
+                               values < 0 ~ 'D',
+                               T ~ 'other'))
+saveRDS(df1, "simulating_data/null_sim/seed_1/df1.RDS")
+saveRDS(df2, "simulating_data/null_sim/seed_1/df2.RDS")
+
+
+
 ## Save data as csv --------------------------------------------------------
 
 vizClusters(cells, pointSize = 2)
@@ -174,5 +192,5 @@ cells_df <- data.frame(locations)*scalefactor
 cells_df$celltypes = as.factor(celltypes)
 head(cells_df)
 
-write.csv(cells_df, file = 'simulating_data/null_sim/df_nullsim_s0.csv')
-saveRDS(cells, 'simulating_data/null_sim/cells_nullsim_s0.RDS')
+write.csv(cells_df, file = 'simulating_data/null_sim/df_nullsim_s1.csv')
+saveRDS(cells, 'simulating_data/null_sim/cells_nullsim_s1.RDS')
