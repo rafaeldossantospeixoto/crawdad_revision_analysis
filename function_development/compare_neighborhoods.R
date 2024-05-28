@@ -86,6 +86,7 @@ plotProportions <- function(cells, dist, dotSize = 5) {
 ## Test --------------------------------------------------------------------
 
 data('slide')
+ct_colors <- readRDS('running_code/processed_data/colors_slide.RDS')
 cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 ref <- 'Bergmann'
 dist <- 50
@@ -98,6 +99,13 @@ plotProportions(cells, dist = 50)
 plotProportions(cells, dist = 100)
 plotProportions(cells, dist = 250)
 
+ref <- 'Granule'
+vizClusters(cells, ofInterest = ref, ref = ref, dist = 10)
+vizClusters(cells, ofInterest = ref, ref = ref, dist = 50)
+vizClusters(cells, ofInterest = ref, ref = ref, dist = 100,
+            alpha = 1, pointSize = .01, lineWidth = 0.1) + 
+  ggplot2::scale_color_manual(values = ct_colors, na.value = '#E6E6E6')
+
 
 
 # Paper figures -----------------------------------------------------------
@@ -106,6 +114,7 @@ plotProportions(cells, dist = 250)
 ## Cerebellum --------------------------------------------------------------
 
 data('slide')
+ct_colors <- readRDS('running_code/processed_data/colors_slide.RDS')
 cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 
 for (d in c(10, 50, 100)){
@@ -119,11 +128,26 @@ for (d in c(10, 50, 100)){
   dev.off()
 }
 
+ref <- 'Granule'
+for (d in c(10, 50, 100)){
+  p <- vizClusters(cells, ofInterest = ref, ref = ref, dist = d,
+                   alpha = 1, pointSize = .001, lineWidth = .1) + 
+    ggplot2::scale_color_manual(values = ct_colors, na.value = '#E6E6E6') + 
+    ggplot2::guides(color = 'none')
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'slide_', d, '_', tolower(gsub(' ', '', ref)),'.pdf'),
+      height = 4, width = 4)
+  print(p)
+  dev.off()
+}
+
 
 
 ## Embryo ------------------------------------------------------------------
 
 data('seq')
+ct_colors <- readRDS('running_code/processed_data/colors_seq.RDS')
 cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
 
 for (d in c(10, 50, 100)){
@@ -137,7 +161,19 @@ for (d in c(10, 50, 100)){
   dev.off()
 }
 
-
+ref <- 'Endothelium'
+for (d in c(10, 50, 100)){
+  p <- vizClusters(cells, ofInterest = ref, ref = ref, dist = d,
+                   alpha = 1, pointSize = .001, lineWidth = .1) + 
+    ggplot2::scale_color_manual(values = ct_colors, na.value = '#E6E6E6') + 
+    ggplot2::guides(color = 'none')
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'seq_', d, '_', tolower(gsub(' ', '', ref)),'.pdf'),
+      height = 4, width = 4)
+  print(p)
+  dev.off()
+}
 
 ## Sim ------------------------------------------------------------------
 
@@ -160,6 +196,7 @@ for (d in c(10, 50, 100)){
 ## Pkhl ------------------------------------------------------------------
 
 data('pkhl')
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
 
 for (d in c(10, 50, 100)){
@@ -173,7 +210,19 @@ for (d in c(10, 50, 100)){
   dev.off()
 }
 
-
+ref <- 'Neutrophils/Monocytes'
+for (d in c(10, 50, 100)){
+  p <- vizClusters(cells, ofInterest = ref, ref = ref, dist = d,
+                   alpha = 1, pointSize = .001, lineWidth = .1) + 
+    ggplot2::scale_color_manual(values = ct_colors, na.value = '#E6E6E6') + 
+    ggplot2::guides(color = 'none')
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'pkhl_', d, '_', tolower(gsub("[ /]", '', ref)),'.pdf'),
+      height = 4, width = 4)
+  print(p)
+  dev.off()
+}
 
 
 
