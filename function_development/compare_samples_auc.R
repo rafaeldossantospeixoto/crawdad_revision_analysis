@@ -30,30 +30,35 @@ readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dis
 
 ## Filter shared pairs -----------------------------------------------------
 
-create_colums <- function(auc){
-  auc_pairs <- auc %>%
-    mutate(sample = paste0('s', slice, 'r', replicate), 
-           pair = paste0(paste0(reference, ' - ', neighbor)))
-  
-  return(auc_pairs)
+create_id_column <- function(df){
+  df_ids <- df %>%
+    dplyr::mutate(id = paste0('s', slice, 'r', replicate))
+  return(df_ids)
+}
+create_pair_colum <- function(df){
+  df_pairs <- df %>%
+    dplyr::mutate(pair = paste0(paste0(reference, ' - ', neighbor)))
+  return(df_pairs)
 }
 
-auc_pairs <- create_colums(auc)
+auc_pairs <- auc %>% 
+  create_id_column() %>% 
+  create_pair_colum()
 
 ## check the number of pairs for each sample
 auc_pairs %>% 
-  group_by(sample) %>% 
+  group_by(id) %>% 
   summarize(unique_pairs = n_distinct(pair))
 
 ## filter data based on common values
-filter_shared_pairs <- function(auc_pairs){
-  shared_pairs <- auc_pairs %>% 
-    group_by(pair) %>%
-    summarize(groups_count = n_distinct(sample)) %>% 
-    filter(groups_count == n_distinct(auc_pairs$sample)) %>% 
-    pull(pair)
+filter_shared_pairs <- function(df_pairs){
+  shared_pairs <- df_pairs %>% 
+    dplyr::group_by(pair) %>%
+    dplyr::summarize(n_unique = dplyr::n_distinct(id)) %>% 
+    dplyr::filter(n_unique == dplyr::n_distinct(df_pairs$id)) %>% 
+    dplyr::pull(pair)
   
-  filtered_auc <- auc_pairs %>% 
+  filtered_auc <- df_pairs %>% 
     filter(pair %in% shared_pairs)
   
   return(filtered_auc)
@@ -96,7 +101,7 @@ pcs <- pca$x[, 1:2] %>%
 pcs %>% 
   ggplot() + 
   geom_point(aes(x = PC1, y = PC2, color = slice)) + 
-  scale_color_manual(values = rainbow(3))
+  scale_color_manual(values = c('#009440', '#ffcb00', '#302681'))
 ## it worked
 
 
@@ -148,19 +153,20 @@ dev.off()
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
 processed_auc <- auc %>% 
   drop_na() %>% 
-  create_colums() %>% 
+  create_id_column() %>% 
+  create_pair_colum() %>% 
   filter_shared_pairs()
 
 ## check unique pairs
 processed_auc %>% 
   group_by(pair) %>%
-  summarize(groups_count = n_distinct(sample))
+  summarize(groups_count = n_distinct(id))
 
 ## create matrix
 processed_auc <- processed_auc %>% 
-  select(c(pair, sample, auc))
+  select(c(pair, id, auc))
 auc_mtx <- processed_auc %>% 
-  pivot_wider(names_from = sample, values_from = auc) %>% 
+  pivot_wider(names_from = id, values_from = auc) %>% 
   select(!pair) %>% 
   drop_na() %>% ## drop nas
   as.matrix() %>% 
@@ -174,7 +180,7 @@ apply(auc_mtx, 2, var)
 pca <- prcomp(auc_mtx)
 pcs <- pca$x[, 1:2] %>% 
   as.data.frame() %>% 
-  mutate(sample = rownames(pca$x)) %>% 
+  mutate(id = rownames(pca$x)) %>% 
   mutate(slice = sapply(rownames(pca$x), 
                         FUN = function(x) str_split(x, 'r')[[1]][1]))
 
@@ -182,7 +188,7 @@ pcs <- pca$x[, 1:2] %>%
 p <- pcs %>% 
   ggplot() + 
   geom_point(aes(x = PC1, y = PC2, color = slice)) + 
-  scale_color_manual(values = rainbow(3)) +
+  scale_color_manual(values = c('#009440', '#ffcb00', '#302681')) +
   theme_bw() +
   coord_equal()
 p
