@@ -7,6 +7,9 @@ library(tidyverse)
 ## read auc data
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
 
+
+## Check nans --------------------------------------------------------------
+
 ## check for nans
 auc[is.na(auc$auc),]
 ## most are Medium Spiny Neurons and s1r3
@@ -16,7 +19,7 @@ readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dis
   crawdad::meltResultsList(withPerms = TRUE) %>% 
   filter(reference == 'Ependymal Cells',
          neighbor == 'Medium Spiny Neurons') %>% 
-  vizTrends()
+  vizTrends(zSigThresh = 1.96)
 readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dist_50.RDS') %>% 
   crawdad::meltResultsList(withPerms = TRUE) %>% 
   filter(reference == 'Medium Spiny Neurons',
@@ -25,7 +28,40 @@ readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dis
 ## there are nan Z-scores for some of the scales, so the auc is nan
 
 
+## Filter shared pairs -----------------------------------------------------
 
+create_colums <- function(auc){
+  auc_pairs <- auc %>%
+    mutate(sample = paste0('s', slice, 'r', replicate), 
+           pair = paste0(paste0(reference, ' - ', neighbor)))
+  
+  return(auc_pairs)
+}
+
+auc_pairs <- create_colums(auc)
+
+## check the number of pairs for each sample
+auc_pairs %>% 
+  group_by(sample) %>% 
+  summarize(unique_pairs = n_distinct(pair))
+
+## filter data based on common values
+filter_shared_pairs <- function(auc_pairs){
+  shared_pairs <- auc_pairs %>% 
+    group_by(pair) %>%
+    summarize(groups_count = n_distinct(sample)) %>% 
+    filter(groups_count == n_distinct(auc_pairs$sample)) %>% 
+    pull(pair)
+  
+  filtered_auc <- auc_pairs %>% 
+    filter(pair %in% shared_pairs)
+  
+  return(filtered_auc)
+}
+
+filtered_auc <- filter_shared_pairs(auc_pairs)
+
+  
 
 # Reduced dimension -------------------------------------------------------
 
@@ -106,13 +142,24 @@ dev.off()
 
 ## Standardize and drop pairs with NaNs ------------------------------------
 
-## read auc data
+## The way to go!
+
+## read and process auc data
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
-auc <- auc %>% 
-  mutate(sample = paste0('s', slice, 'r', replicate), 
-         pair = paste0(paste0(reference, ' - ', neighbor))) %>% 
+processed_auc <- auc %>% 
+  drop_na() %>% 
+  create_colums() %>% 
+  filter_shared_pairs()
+
+## check unique pairs
+processed_auc %>% 
+  group_by(pair) %>%
+  summarize(groups_count = n_distinct(sample))
+
+## create matrix
+processed_auc <- processed_auc %>% 
   select(c(pair, sample, auc))
-auc_mtx <- auc %>% 
+auc_mtx <- processed_auc %>% 
   pivot_wider(names_from = sample, values_from = auc) %>% 
   select(!pair) %>% 
   drop_na() %>% ## drop nas
@@ -151,16 +198,15 @@ dev.off()
 
 # Variance ----------------------------------------------------------------
 
-
-# Drop NaNs ---------------------------------------------------------------
-
-## read auc data
+## read and process auc data
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
-auc <- auc %>% 
-  drop_na()
+processed_auc <- auc %>% 
+  drop_na() %>% 
+  create_colums() %>%
+  filter_shared_pairs()
 
 ## all samples
-auc %>% 
+processed_auc %>% 
   group_by(reference, neighbor) %>% 
   summarize(variance = var(auc)) %>%
   ggplot() +
@@ -170,16 +216,44 @@ auc %>%
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 1))
 
-## slice and replicate
-auc %>% 
-  filter(replicate == 3) %>% 
+## slice
+p <- processed_auc %>% 
+  filter(slice == 1) %>% 
   group_by(reference, neighbor) %>% 
   summarize(variance = var(auc)) %>%
   ggplot() +
-  geom_point(aes(x = reference, y = neighbor, size = variance)) +
-  scale_radius(range = c(1, 10),
+  geom_point(aes(x = reference, y = neighbor, size = variance), color = '#006437') +
+  scale_radius(range = c(1, 15),
                limits=c(1, 4e7),
                breaks=c(1e7, 2e7, 3e7, 4e7)) +
   theme_bw() +
   theme(legend.position='right',
-        axis.text.x = element_text(angle = 45, h = 1))
+        axis.text.x = element_text(angle = 45, h = 1)) + 
+  coord_equal()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_auc_variance_s1.pdf'),
+    height = 5, width = 7)
+p
+dev.off()
+
+## replicate
+p <- processed_auc %>% 
+  filter(replicate == 1) %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(variance = var(auc)) %>%
+  ggplot() +
+  geom_point(aes(x = reference, y = neighbor, size = variance), color = '#006437') +
+  scale_radius(range = c(1, 15),
+               limits=c(1, 4e7),
+               breaks=c(1e7, 2e7, 3e7, 4e7)) +
+  theme_bw() +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 1)) +
+  coord_equal()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_auc_variance_r1.pdf'),
+    height = 5, width = 7)
+p
+dev.off()
