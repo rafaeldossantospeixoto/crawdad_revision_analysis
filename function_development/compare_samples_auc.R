@@ -242,7 +242,6 @@ p <- processed_auc %>%
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
                                                      vjust = 0.5, 
                                                      hjust=0)) +
-  labs(size = 'mean scale') +
   ggplot2::coord_equal()
 p
 pdf(paste0('function_development/comparing_samples/paper_figures/',
@@ -267,7 +266,6 @@ p <- processed_auc %>%
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
                                                      vjust = 0.5, 
                                                      hjust=0)) +
-  labs(size = 'mean scale') +
   ggplot2::coord_equal()
 p
 pdf(paste0('function_development/comparing_samples/paper_figures/',
