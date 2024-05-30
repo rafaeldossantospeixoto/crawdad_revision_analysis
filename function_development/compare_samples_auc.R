@@ -35,7 +35,7 @@ create_id_column <- function(df){
     dplyr::mutate(id = paste0('s', slice, 'r', replicate))
   return(df_ids)
 }
-create_pair_colum <- function(df){
+create_pair_column <- function(df){
   df_pairs <- df %>%
     dplyr::mutate(pair = paste0(paste0(reference, ' - ', neighbor)))
   return(df_pairs)
@@ -208,7 +208,8 @@ dev.off()
 auc <- readRDS('running_code/outputs/merfish_mouseBrain_diff_auc_dist_50.RDS')
 processed_auc <- auc %>% 
   drop_na() %>% 
-  create_colums() %>%
+  create_id_column() %>%
+  create_pair_column() %>%
   filter_shared_pairs()
 
 ## all samples
@@ -263,3 +264,130 @@ pdf(paste0('function_development/comparing_samples/paper_figures/',
     height = 5, width = 7)
 p
 dev.off()
+
+
+
+
+# Trends ------------------------------------------------------------------
+
+ref <- 'GABAergic Estrogen-Receptive Neurons' 
+nei <- 'Excitatory Neurons'
+
+## S1R* --------------------------------------------------------------------
+
+## S1R*
+dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE) %>% 
+  dplyr::mutate(id = 's1r1')
+dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r2_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE) %>% 
+  dplyr::mutate(id = 's1r2')
+dat3 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r3_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE) %>% 
+  dplyr::mutate(id = 's1r3')
+dats <- bind_rows(dat1, dat2, dat3)
+
+zsig <- correctZBonferroni(dats)
+
+p <- dats %>% 
+  filter(reference == ref,
+         neighbor == nei) %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig) + 
+  scale_color_manual(values = c(ggdark::invert_color('#009440'), 
+                                ggdark::invert_color('#ffcb00'), 
+                                ggdark::invert_color('#302681')))
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_trends_s1.pdf'),
+    height = 5, width = 7)
+p
+dev.off()
+
+
+
+## S*R1 --------------------------------------------------------------------
+
+## S*R1
+dat1 <- readRDS('running_code/outputs/merfish_mouseBrain_s1_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE) %>% 
+  dplyr::mutate(id = 's1r1')
+dat2 <- readRDS('running_code/outputs/merfish_mouseBrain_s2_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE) %>% 
+  dplyr::mutate(id = 's2r1')
+dat3 <- readRDS('running_code/outputs/merfish_mouseBrain_s3_r1_findTrends_ct_cleaned_dist_50.RDS') %>% 
+  crawdad::meltResultsList(withPerms = TRUE) %>% 
+  dplyr::mutate(id = 's3r1')
+dats <- bind_rows(dat1, dat2, dat3)
+
+zsig <- correctZBonferroni(dats)
+
+p <- dats %>% 
+  filter(reference == ref,
+         neighbor == nei) %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig) + 
+  scale_color_manual(values = c('#009440', '#ffcb00', '#302681'))
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_trends_r1.pdf'),
+    height = 5, width = 7)
+p
+dev.off()
+
+
+
+
+
+
+# Spatial visualization ---------------------------------------------------
+
+library(SpatialExperiment)
+ref <- 'GABAergic Estrogen-Receptive Neurons' 
+nei <- 'Excitatory Neurons'
+ct_colors <- c('GABAergic Estrogen-Receptive Neurons' = 'maroon', 
+               'Excitatory Neurons' = 'cyan', 
+               'other' = '#E6E6E6')
+
+## S1R1
+spe <- readRDS('running_code/processed_data/merfish_mouseBrain_s1_r1.RDS')
+cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), 
+                       celltypes = colData(spe)$celltype_merged)
+p <- vizClusters(cells, ofInterest = c(ref, nei), alpha = 1, pointSize = 0.001) +
+  scale_color_manual(values = ct_colors)
+print(p)
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'merfish_brains_s1r1.pdf'),
+    height = 5, width = 7)
+print(p)
+dev.off()
+
+## S*R1
+for (r in 1:3) {
+  spe <- readRDS(paste0('running_code/processed_data/merfish_mouseBrain_s1_r',
+                        r, '.RDS'))
+  cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), 
+                         celltypes = colData(spe)$celltype_merged)
+  p <- vizClusters(cells, ofInterest = c(ref, nei), alpha = 1, pointSize = 0.001) +
+    scale_color_manual(values = ct_colors)
+  print(p)
+  pdf(paste0('function_development/comparing_samples/paper_figures/',
+             'merfish_brains_s1r', r, '.pdf'),
+      height = 5, width = 7)
+  print(p)
+  dev.off()
+}
+
+## S1R*
+for (s in 1:3) {
+  spe <- readRDS(paste0('running_code/processed_data/merfish_mouseBrain_s',
+                        s, '_r1.RDS'))
+  cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)), 
+                         celltypes = colData(spe)$celltype_merged)
+  p <- vizClusters(cells, ofInterest = c(ref, nei), alpha = 1, pointSize = 0.001) +
+    scale_color_manual(values = ct_colors)
+  print(p)
+  pdf(paste0('function_development/comparing_samples/paper_figures/',
+             'merfish_brains_s', s, 'r1.pdf'),
+      height = 5, width = 7)
+  print(p)
+  dev.off()
+}
