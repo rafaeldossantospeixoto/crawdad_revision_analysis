@@ -40,16 +40,6 @@ create_pair_column <- function(df){
     dplyr::mutate(pair = paste0(paste0(reference, ' - ', neighbor)))
   return(df_pairs)
 }
-
-auc_pairs <- auc %>% 
-  create_id_column() %>% 
-  create_pair_colum()
-
-## check the number of pairs for each sample
-auc_pairs %>% 
-  group_by(id) %>% 
-  summarize(unique_pairs = n_distinct(pair))
-
 ## filter data based on common values
 filter_shared_pairs <- function(df_pairs){
   shared_pairs <- df_pairs %>% 
@@ -58,11 +48,20 @@ filter_shared_pairs <- function(df_pairs){
     dplyr::filter(n_unique == dplyr::n_distinct(df_pairs$id)) %>% 
     dplyr::pull(pair)
   
-  filtered_auc <- df_pairs %>% 
+  filtered_df <- df_pairs %>% 
     filter(pair %in% shared_pairs)
   
-  return(filtered_auc)
+  return(filtered_df)
 }
+
+auc_pairs <- auc %>% 
+  create_id_column() %>% 
+  create_pair_column()
+
+## check the number of pairs for each sample
+auc_pairs %>% 
+  group_by(id) %>% 
+  summarize(unique_pairs = n_distinct(pair))
 
 filtered_auc <- filter_shared_pairs(auc_pairs)
 
@@ -223,6 +222,10 @@ processed_auc %>%
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 1))
 
+## plotting parameters
+all_cts <- unique(c(as.character(processed_auc$reference), 
+                    as.character(processed_auc$neighbor)))
+
 ## slice
 p <- processed_auc %>% 
   filter(slice == 1) %>% 
@@ -233,10 +236,14 @@ p <- processed_auc %>%
   scale_radius(range = c(1, 15),
                limits=c(1, 4e7),
                breaks=c(1e7, 2e7, 3e7, 4e7)) +
-  theme_bw() +
-  theme(legend.position='right',
-        axis.text.x = element_text(angle = 45, h = 1)) + 
-  coord_equal()
+  ggplot2::theme_bw() +
+  ggplot2::scale_x_discrete(limits = all_cts, position = 'top') +
+  ggplot2::scale_y_discrete(limits = all_cts) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
+                                                     vjust = 0.5, 
+                                                     hjust=0)) +
+  labs(size = 'mean scale') +
+  ggplot2::coord_equal()
 p
 pdf(paste0('function_development/comparing_samples/paper_figures/',
            'merfish_brains_auc_variance_s1.pdf'),
@@ -254,10 +261,14 @@ p <- processed_auc %>%
   scale_radius(range = c(1, 15),
                limits=c(1, 4e7),
                breaks=c(1e7, 2e7, 3e7, 4e7)) +
-  theme_bw() +
-  theme(legend.position='right',
-        axis.text.x = element_text(angle = 45, h = 1)) +
-  coord_equal()
+  ggplot2::theme_bw() +
+  ggplot2::scale_x_discrete(limits = all_cts, position = 'top') +
+  ggplot2::scale_y_discrete(limits = all_cts) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, 
+                                                     vjust = 0.5, 
+                                                     hjust=0)) +
+  labs(size = 'mean scale') +
+  ggplot2::coord_equal()
 p
 pdf(paste0('function_development/comparing_samples/paper_figures/',
            'merfish_brains_auc_variance_r1.pdf'),
