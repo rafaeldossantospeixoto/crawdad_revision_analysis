@@ -76,7 +76,7 @@ dev.off()
 
 
 
-# Run sim samples ---------------------------------------------------------
+## Run CRAWDAD ---------------------------------------------------------
 
 library(crawdad)
 library(tidyverse)
@@ -162,3 +162,74 @@ for (i in 1:length(ref_cts)) {
   # print(p)
   # dev.off()
 }
+
+
+
+# Datasets 1 to 10 --------------------------------------------------------
+
+
+## Run CRAWDAD -------------------------------------------------------------
+
+
+library(crawdad)
+library(tidyverse)
+
+ncores <- 7
+scales <- seq(100, 500, by=50)
+
+dfs <- readRDS('simulating_data/null_sim/cells_nullsim.RDS')
+dats <- list()
+
+for (i in 1:length(dfs)) {
+  
+  print(paste('Analyzing dataset', i))
+  
+  cells <- dfs[[i]]
+  
+  ## generate background
+  shuffle.list <- crawdad:::makeShuffledCells(cells,
+                                              scales = scales,
+                                              perms = 10,
+                                              ncores = ncores,
+                                              seed = i,
+                                              verbose = TRUE)
+  
+  ## find trends, dist 50
+  results_50 <- crawdad::findTrends(cells,
+                                    dist = 50,
+                                    shuffle.list = shuffle.list,
+                                    ncores = ncores,
+                                    verbose = TRUE,
+                                    returnMeans = FALSE)
+  dat_50 <- crawdad::meltResultsList(results_50, withPerms = T)
+  dat_50$id <- i
+  
+  dats[[i]] <- dat_50
+}
+
+saveRDS(dfs, 'running_code/processed_data/nullsim/dfs.RDS')
+
+
+# Evaluate performance ----------------------------------------------------
+
+dat <- bind_rows(dats)
+
+## Bonferroni
+zsig <- correctZBonferroni(dat)
+df <- define_relationship_type(dat, zSigThresh = zsig)
+
+df %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(enrichment = sum(enrichment), 
+            depletion = sum(depletion))
+
+## 1.96
+zsig <- 1.96
+df <- define_relationship_type(dat, zSigThresh = zsig)
+
+df %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(enrichment = sum(enrichment), 
+            depletion = sum(depletion))
+
+
