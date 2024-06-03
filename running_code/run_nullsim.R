@@ -233,3 +233,73 @@ df %>%
             depletion = sum(depletion))
 
 
+
+
+# D = 30 --------------------------------------------------------
+
+
+## Run CRAWDAD -------------------------------------------------------------
+
+
+library(crawdad)
+library(tidyverse)
+
+ncores <- 7
+scales <- seq(100, 500, by=50)
+
+dfs <- readRDS('simulating_data/null_sim/cells_nullsim.RDS')
+dats <- list()
+
+for (i in 1:length(dfs)) {
+  
+  print(paste('Analyzing dataset', i))
+  
+  cells <- dfs[[i]]
+  
+  ## generate background
+  shuffle.list <- crawdad:::makeShuffledCells(cells,
+                                              scales = scales,
+                                              perms = 5,
+                                              ncores = ncores,
+                                              seed = i,
+                                              verbose = TRUE)
+  
+  ## find trends, dist 30
+  results <- crawdad::findTrends(cells,
+                                 dist = 30,
+                                 shuffle.list = shuffle.list,
+                                 ncores = ncores,
+                                 verbose = TRUE,
+                                 returnMeans = FALSE)
+  dat <- crawdad::meltResultsList(results, withPerms = T)
+  dat$id <- i
+  
+  dats[[i]] <- dat
+}
+
+saveRDS(dats, 'running_code/processed_data/nullsim/dats_30.RDS')
+
+
+# Evaluate performance ----------------------------------------------------
+
+dat <- bind_rows(dats)
+
+## Bonferroni
+zsig <- correctZBonferroni(dat)
+df <- define_relationship_type(dat, zSigThresh = zsig)
+
+df %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(enrichment = sum(enrichment), 
+            depletion = sum(depletion))
+
+## 1.96
+zsig <- 1.96
+df <- define_relationship_type(dat, zSigThresh = zsig)
+
+df %>% 
+  group_by(reference, neighbor) %>% 
+  summarize(enrichment = sum(enrichment), 
+            depletion = sum(depletion))
+
+
