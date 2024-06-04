@@ -1,6 +1,6 @@
 library(crawdad)
 library(tidyverse)
-ncores <- 56
+ncores <- 7
 
 
 # pkhl --------------------------------------------------------------------
@@ -1078,7 +1078,7 @@ results <- crawdad::findTrends(cells,
                                ncores = ncores,
                                verbose = TRUE,
                                returnMeans = FALSE)
-## Time was 101.13 mins in Easley with 28 cores
+## Time was 180 mins in Easley with 7 cores
 ## The number of cores does not seem to help much
 
 dat <- crawdad::meltResultsList(results, withPerms = TRUE)
@@ -1096,7 +1096,7 @@ binomMat <- crawdad::binomialTestMatrix(cells,
                                         neigh.dist = 50,
                                         ncores = ncores,
                                         verbose = TRUE)
-## Time to compute was 25.64mins
+## Time to compute was 104.53mins in E7
 saveRDS(binomMat, file = 'running_code/processed_data/spleen/binomMat_ngpl_50.RDS')
 binomMat <- readRDS('running_code/processed_data/spleen/binomMat_ngpl_50.RDS')
 
@@ -1138,23 +1138,22 @@ ct_order <- readRDS('running_code/processed_data/ct_order_spleen.RDS')
 ## Spatial plot
 all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
-ct_colors <- c('Sinusoidal cells' = '#FF0080',
-               'Myeloid cells' = '#0000FF',
-               'Neutrophils/Monocytes' = '#8000FF',
-               'Blood endothelial' = '#FF8000',
-               'CD8 Memory T cells' = '#80FF00',
-               'Macrophages' = '#0080FF',
-               'Fol B cells' = '#00FF00',
-               'B cells, red pulp' = '#FF0000',
-               'Ki67 proliferating' = '#00FFFF',
-               # 'indistinct' = '#00FF80',
-               'CD4 Memory T cells' = '#FFFF00',
-               'Podoplanin' = '#FF00FF')
-saveRDS(ct_colors, 'running_code/processed_data/colors_spleen.RDS')
+# ct_colors <- c('Sinusoidal cells' = '#FF0080',
+#                'Myeloid cells' = '#0000FF',
+#                'Neutrophils/Monocytes' = '#8000FF',
+#                'Blood endothelial' = '#FF8000',
+#                'CD8 Memory T cells' = '#80FF00',
+#                'Macrophages' = '#0080FF',
+#                'Fol B cells' = '#00FF00',
+#                'B cells, red pulp' = '#FF0000',
+#                'Ki67 proliferating' = '#00FFFF',
+#                # 'indistinct' = '#00FF80',
+#                'CD4 Memory T cells' = '#FFFF00',
+#                'Podoplanin' = '#FF00FF')
+# saveRDS(ct_colors, 'running_code/processed_data/colors_spleen.RDS')
 
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  coord_fixed() + 
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/ngpl_spatial_plot.pdf',
@@ -1172,7 +1171,7 @@ dat_filtered <- dat %>%
   filter(neighbor != 'indistinct') %>% 
   filter(reference != 'indistinct')
 
-p <- vizColocDotplot(dat_filtered, zsigThresh = zsig, zscoreLimit = zsig*2, 
+p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2, 
                      reorder = TRUE, dotSizes = c(2, 14)) +
   scale_x_discrete(limits = ct_order, position = 'top') +
   scale_y_discrete(limits = ct_order, position = 'right') +
@@ -1240,7 +1239,6 @@ cells_subset <- cells %>%
 crawdad::vizClusters(cells = cells_subset)
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
   scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
-  coord_fixed() + 
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/ngpl_subset_spatial_plot.pdf',
