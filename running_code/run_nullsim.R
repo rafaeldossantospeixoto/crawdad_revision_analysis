@@ -207,10 +207,13 @@ for (i in 1:length(dfs)) {
   dats[[i]] <- dat_50
 }
 
-saveRDS(dfs, 'running_code/processed_data/nullsim/dfs.RDS')
+saveRDS(dats, 'running_code/processed_data/nullsim/dats.RDS')
 
 
-# Evaluate performance ----------------------------------------------------
+
+
+
+## Evaluate performance ----------------------------------------------------
 
 dat <- bind_rows(dats)
 
@@ -231,6 +234,67 @@ df %>%
   group_by(reference, neighbor) %>% 
   summarize(enrichment = sum(enrichment), 
             depletion = sum(depletion))
+
+
+
+
+## AUC ---------------------------------------------------------------------
+
+dat <- bind_rows(dats)
+
+## calculate auc
+dat_auc <- dat %>% 
+  group_by(id, scale, reference, neighbor) %>% ## mean across perms
+  summarise(Z = mean(Z)) %>% 
+  group_by(id, reference, neighbor) %>% ## calculate auc
+  summarise(auc = pracma::trapz(scale, Z)) 
+
+## select which neighbor has the minimum auc for each reference
+dat_auc %>% 
+  mutate(pair = paste(reference, neighbor)) %>% ## calculate min and max auc
+  group_by(id, reference) %>% 
+  filter(auc == min(auc)) %>% 
+  ungroup() %>% 
+  mutate(right = case_when((reference == 'A') & (neighbor == 'B') ~ T,
+                           (reference == 'B') & (neighbor == 'A') ~ T,
+                           (reference == 'C') & (neighbor == 'D') ~ T,
+                           (reference == 'D') & (neighbor == 'C') ~ T,
+                           T ~ F)) %>%
+  pull(right) %>% 
+  sum()
+## [1] 38
+
+## select which neighbor has the minimum auc for each reference
+dat_auc %>% 
+  mutate(pair = paste(reference, neighbor)) %>% ## calculate min and max auc
+  group_by(id, reference) %>% 
+  filter(auc == max(auc)) %>% 
+  ungroup() %>% 
+  mutate(right = case_when((reference == 'A') & (neighbor == 'A') ~ T,
+                           (reference == 'B') & (neighbor == 'B') ~ T,
+                           (reference == 'C') & (neighbor == 'C') ~ T,
+                           (reference == 'D') & (neighbor == 'D') ~ T,
+                           T ~ F)) %>%
+  pull(right) %>% 
+  sum()
+## [1] 38
+
+## verify one case
+dats[[3]] %>% 
+  group_by(scale, reference, neighbor) %>% ## mean across perms
+  summarise(Z = mean(Z)) %>% 
+  filter(reference == 'B') %>% 
+  ggplot() + 
+  geom_line(aes(scale, Z, color = neighbor)) + 
+  labs(title = 'Dataframe 3 - Reference B') +
+  scale_color_manual(values = rainbow(4)) + 
+  theme_minimal()
+dfs[[3]] %>% 
+  vizClusters(ofInterest = c('A', 'B'), alpha = 1)
+dfs[[3]] %>% 
+  vizClusters(ofInterest = c('D', 'B'), alpha = 1)
+
+
 
 
 
@@ -278,9 +342,11 @@ for (i in 1:length(dfs)) {
 }
 
 saveRDS(dats, 'running_code/processed_data/nullsim/dats_30.RDS')
+dats <- readRDS('running_code/processed_data/nullsim/dats_30.RDS')
 
 
-# Evaluate performance ----------------------------------------------------
+
+## Evaluate performance ----------------------------------------------------
 
 dat <- bind_rows(dats)
 
@@ -303,3 +369,44 @@ df %>%
             depletion = sum(depletion))
 
 
+
+## AUC ---------------------------------------------------------------------
+
+dat <- bind_rows(dats)
+
+## calculate auc
+dat_auc <- dat %>% 
+  group_by(id, scale, reference, neighbor) %>% ## mean across perms
+  summarise(Z = mean(Z)) %>% 
+  group_by(id, reference, neighbor) %>% ## calculate auc
+  summarise(auc = pracma::trapz(scale, Z)) 
+
+## select which neighbor has the minimum auc for each reference
+dat_auc %>% 
+  mutate(pair = paste(reference, neighbor)) %>% ## calculate min and max auc
+  group_by(id, reference) %>% 
+  filter(auc == min(auc)) %>% 
+  ungroup() %>% 
+  mutate(right = case_when((reference == 'A') & (neighbor == 'B') ~ T,
+                           (reference == 'B') & (neighbor == 'A') ~ T,
+                           (reference == 'C') & (neighbor == 'D') ~ T,
+                           (reference == 'D') & (neighbor == 'C') ~ T,
+                           T ~ F)) %>%
+  pull(right) %>% 
+  sum()
+## [1] 39
+
+## select which neighbor has the minimum auc for each reference
+dat_auc %>% 
+  mutate(pair = paste(reference, neighbor)) %>% ## calculate min and max auc
+  group_by(id, reference) %>% 
+  filter(auc == max(auc)) %>% 
+  ungroup() %>% 
+  mutate(right = case_when((reference == 'A') & (neighbor == 'A') ~ T,
+                           (reference == 'B') & (neighbor == 'B') ~ T,
+                           (reference == 'C') & (neighbor == 'C') ~ T,
+                           (reference == 'D') & (neighbor == 'D') ~ T,
+                           T ~ F)) %>%
+  pull(right) %>% 
+  sum()
+## [1] 37
