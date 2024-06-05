@@ -178,6 +178,24 @@ ncores <- 7
 scales <- seq(100, 500, by=50)
 
 dfs <- readRDS('simulating_data/null_sim/cells_nullsim.RDS')
+
+## save dfs in csv
+list_dfs <- list()
+for (i in 1:length(dfs)) {
+  
+  df_sf <- dfs[[i]]
+  
+  coordinates <- sf::st_coordinates(df_sf$geometry)
+  df <- data.frame(x = coordinates[, 1],
+                   y = coordinates[, 2],
+                   celltypes = df_sf$celltypes,
+                   id = i)
+  
+  list_dfs[[i]] <- df
+}
+dfs_csv <- bind_rows(list_dfs)
+write.csv(dfs_csv, 'simulating_data/null_sim/dfs_nullsim.csv')
+
 dats <- list()
 
 for (i in 1:length(dfs)) {
