@@ -211,6 +211,10 @@ dev.off()
 
 # xxcd --------------------------------------------------------------------
 
+library(crawdad)
+library(tidyverse)
+ncores <- 7
+
 xxcd <- read.csv2(file = '../CRAWDAD/data/spleen/XXCD.meta.csv.gz', row.names = 1)
 head(xxcd)
 range(xxcd$x)
@@ -225,29 +229,29 @@ ggplot(xxcd, aes(x=x, y=y, col=celltypes)) +
   theme_void()
 
 scales <- seq(100, 1750, by=50)
-shuffle.list <- crawdad:::makeShuffledCells(cells,
-                                            scales = scales,
-                                            perms = 10,
-                                            ncores = ncores,
-                                            seed = 1,
-                                            verbose = TRUE)
-## Time was 66.27 mins in Easley with 28 cores
-saveRDS(shuffle.list, 'running_code/processed_data/spleen/shufflelist_xxcd_50.RDS')
+# shuffle.list <- crawdad:::makeShuffledCells(cells,
+#                                             scales = scales,
+#                                             perms = 10,
+#                                             ncores = ncores,
+#                                             seed = 1,
+#                                             verbose = TRUE)
+# ## Time was 66.27 mins in Easley with 28 cores
+# saveRDS(shuffle.list, 'running_code/processed_data/spleen/shufflelist_xxcd_50.RDS')
 shuffle.list <- readRDS('running_code/processed_data/spleen/shufflelist_xxcd_50.RDS')
 
 ## find trends, passing background as parameter
 ## changed distance to 50
-results <- crawdad::findTrends(cells,
-                               dist = 50,
-                               shuffle.list = shuffle.list,
-                               ncores = ncores,
-                               verbose = TRUE,
-                               returnMeans = FALSE)
-## Time was 101.13 mins in Easley with 28 cores
-## The number of cores does not seem to help much
-
-dat <- crawdad::meltResultsList(results, withPerms = TRUE)
-saveRDS(dat, 'running_code/processed_data/spleen/dat_xxcd_50.RDS')
+# results <- crawdad::findTrends(cells,
+#                                dist = 50,
+#                                shuffle.list = shuffle.list,
+#                                ncores = ncores,
+#                                verbose = TRUE,
+#                                returnMeans = FALSE)
+# ## Time was 101.13 mins in Easley with 28 cores
+# ## The number of cores does not seem to help much
+# 
+# dat <- crawdad::meltResultsList(results, withPerms = TRUE)
+# saveRDS(dat, 'running_code/processed_data/spleen/dat_xxcd_50.RDS')
 dat <- readRDS('running_code/processed_data/spleen/dat_xxcd_50.RDS')
 
 
@@ -257,36 +261,36 @@ dat <- readRDS('running_code/processed_data/spleen/dat_xxcd_50.RDS')
 ## Subset analysis ---------------------------------------------------------
 
 ## changed neighborhood to 50
-binomMat <- crawdad::binomialTestMatrix(cells,
-                                        neigh.dist = 50,
-                                        ncores = ncores,
-                                        verbose = TRUE)
-## Time to compute was 25.64mins
-saveRDS(binomMat, file = 'running_code/processed_data/spleen/binomMat_xxcd_50.RDS')
+# binomMat <- crawdad::binomialTestMatrix(cells,
+#                                         neigh.dist = 50,
+#                                         ncores = ncores,
+#                                         verbose = TRUE)
+# ## Time to compute was 25.64mins
+# saveRDS(binomMat, file = 'running_code/processed_data/spleen/binomMat_xxcd_50.RDS')
 binomMat <- readRDS('running_code/processed_data/spleen/binomMat_xxcd_50.RDS')
 
-subset.list <- crawdad::selectSubsets(binomMat,
-                                      cells$celltypes,
-                                      sub.type = "near",
-                                      sub.thresh = 0.05,
-                                      ncores = ncores,
-                                      verbose = TRUE)
-## Time to compute was 0.17mins
-saveRDS(subset.list, file = 'running_code/processed_data/spleen/subsetlist_xxcd_50.RDS')
+# subset.list <- crawdad::selectSubsets(binomMat,
+#                                       cells$celltypes,
+#                                       sub.type = "near",
+#                                       sub.thresh = 0.05,
+#                                       ncores = ncores,
+#                                       verbose = TRUE)
+# ## Time to compute was 0.17mins
+# saveRDS(subset.list, file = 'running_code/processed_data/spleen/subsetlist_xxcd_50.RDS')
 subset.list <- readRDS('running_code/processed_data/spleen/subsetlist_xxcd_50.RDS')
 
 ##
-results.subsets <- crawdad::findTrends(cells,
-                                       dist = 50,
-                                       shuffle.list = shuffle.list,
-                                       subset.list = subset.list,
-                                       ncores = ncores,
-                                       verbose = TRUE,
-                                       returnMeans = FALSE)
-## Time was 715.76 mins
-## subsets
-dats <- crawdad::meltResultsList(results.subsets, withPerms = TRUE)
-saveRDS(dats, file = 'running_code/processed_data/spleen/dats_xxcd_50.RDS')
+# results.subsets <- crawdad::findTrends(cells,
+#                                        dist = 50,
+#                                        shuffle.list = shuffle.list,
+#                                        subset.list = subset.list,
+#                                        ncores = ncores,
+#                                        verbose = TRUE,
+#                                        returnMeans = FALSE)
+# ## Time was 715.76 mins
+# ## subsets
+# dats <- crawdad::meltResultsList(results.subsets, withPerms = TRUE)
+# saveRDS(dats, file = 'running_code/processed_data/spleen/dats_xxcd_50.RDS')
 dats <- readRDS('running_code/processed_data/spleen/dats_xxcd_50.RDS')
 
 ## Multiple-test correction
@@ -303,23 +307,10 @@ ct_order <- readRDS('running_code/processed_data/ct_order_spleen.RDS')
 ## Spatial plot
 all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
-ct_colors <- c('Sinusoidal cells' = '#FF0080',
-               'Myeloid cells' = '#0000FF',
-               'Neutrophils/Monocytes' = '#8000FF',
-               'Blood endothelial' = '#FF8000',
-               'CD8 Memory T cells' = '#80FF00',
-               'Macrophages' = '#0080FF',
-               'Fol B cells' = '#00FF00',
-               'B cells, red pulp' = '#FF0000',
-               'Ki67 proliferating' = '#00FFFF',
-               # 'indistinct' = '#00FF80',
-               'CD4 Memory T cells' = '#FFFF00',
-               'Podoplanin' = '#FF00FF')
-saveRDS(ct_colors, 'running_code/processed_data/colors_spleen.RDS')
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 
 p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
   scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  coord_fixed() + 
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/xxcd_spatial_plot.pdf',
@@ -337,13 +328,13 @@ dat_filtered <- dat %>%
   filter(neighbor != 'indistinct') %>% 
   filter(reference != 'indistinct')
 
-p <- vizColocDotplot(dat_filtered, zsigThresh = zsig, zscoreLimit = zsig*2, 
+p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2, 
                      reorder = TRUE, dotSizes = c(2, 14)) +
-  scale_x_discrete(limits = ct_order, position = 'top') +
+  scale_x_discrete(limits = ct_order, position = 'bottom') +
   scale_y_discrete(limits = ct_order, position = 'right') +
   coord_fixed() + 
   theme(legend.position='bottom',
-        axis.text.x = element_text(angle = 45, h = 0),
+        axis.text.x = element_text(angle = 45, h = 1),
         legend.box = 'vertical')
 p
 pdf('running_code/paper_figures/spleen/xxcd_dotplot.pdf', height = 8, width = 6.7)
@@ -358,10 +349,10 @@ dev.off()
 ct_ngb <- 'CD4 Memory T cells'
 ct_ref <- 'Fol B cells'
 ct_subset <- paste(ct_ngb, 'near', ct_ref, sep = '_')
-## selected CD4 Color '#FFFF00' and got 30% shades above and below
-## https://maketintsandshades.com/#FFFF00
+## selected CD4 Color '#ff0080' and got 30% shades above and below
+## https://maketintsandshades.com/#ff0080
 ## the other color is the Fol B
-colors_subset <- c('#b3b300', '#ffff4d', '#00FF00')
+colors_subset <- c('#b3005a', '#ff4da6', '#00FF80')
 
 idx_ref_all <- as.character(which(cells$celltypes == ct_ref))
 idx_ngb_all <- as.character(which(cells$celltypes == ct_ngb))
@@ -405,7 +396,6 @@ cells_subset <- cells %>%
 crawdad::vizClusters(cells = cells_subset)
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
   scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
-  coord_fixed() + 
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/xxcd_subset_spatial_plot.pdf',
