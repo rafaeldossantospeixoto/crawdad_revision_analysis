@@ -16,31 +16,31 @@ ggplot(pkhl, aes(x=x, y=y, col=celltypes)) +
 
 scales <- seq(100, 1750, by=50)
 
-shuffle.list <- crawdad:::makeShuffledCells(cells,
-                                            scales = scales,
-                                            perms = 10,
-                                            ncores = ncores,
-                                            seed = 1,
-                                            verbose = TRUE)
-## Time was 25.74 mins in my pc
-## Time was 70.47 mins in Easley with 28 cores
-saveRDS(shuffle.list, 'running_code/processed_data/spleen/shufflelist_pkhl_50.RDS')
+# shuffle.list <- crawdad:::makeShuffledCells(cells,
+#                                             scales = scales,
+#                                             perms = 10,
+#                                             ncores = ncores,
+#                                             seed = 1,
+#                                             verbose = TRUE)
+# ## Time was 25.74 mins in my pc
+# ## Time was 70.47 mins in Easley with 28 cores
+# saveRDS(shuffle.list, 'running_code/processed_data/spleen/shufflelist_pkhl_50.RDS')
 shuffle.list <- readRDS('running_code/processed_data/spleen/shufflelist_pkhl_50.RDS')
 
 ## find trends, passing background as parameter
 ## changed distance to 50
-results <- crawdad::findTrends(cells,
-                               dist = 50,
-                               shuffle.list = shuffle.list,
-                               ncores = ncores,
-                               verbose = TRUE,
-                               returnMeans = FALSE)
-## Time was 107.72 mins in my pc
-## Time was 104.3 mins in Easley with 28 cores
-## The number of cores does not seem to help much
-
-dat <- crawdad::meltResultsList(results, withPerms = TRUE)
-saveRDS(dat, 'running_code/processed_data/spleen/dat_pkhl_50.RDS')
+# results <- crawdad::findTrends(cells,
+#                                dist = 50,
+#                                shuffle.list = shuffle.list,
+#                                ncores = ncores,
+#                                verbose = TRUE,
+#                                returnMeans = FALSE)
+# ## Time was 107.72 mins in my pc
+# ## Time was 104.3 mins in Easley with 28 cores
+# ## The number of cores does not seem to help much
+# 
+# dat <- crawdad::meltResultsList(results, withPerms = TRUE)
+# saveRDS(dat, 'running_code/processed_data/spleen/dat_pkhl_50.RDS')
 dat <- readRDS('running_code/processed_data/spleen/dat_pkhl_50.RDS')
 
 
@@ -50,37 +50,37 @@ dat <- readRDS('running_code/processed_data/spleen/dat_pkhl_50.RDS')
 ## Subset analysis ---------------------------------------------------------
 
 ## changed neighborhood to 50
-binomMat <- crawdad::binomialTestMatrix(cells,
-                                        neigh.dist = 50,
-                                        ncores = ncores,
-                                        verbose = TRUE)
-## Time to compute was 25.68mins
-head(binomMat)
-saveRDS(binomMat, file = 'running_code/processed_data/spleen/binomMat_pkhl_50.RDS')
+# binomMat <- crawdad::binomialTestMatrix(cells,
+#                                         neigh.dist = 50,
+#                                         ncores = ncores,
+#                                         verbose = TRUE)
+# ## Time to compute was 25.68mins
+# head(binomMat)
+# saveRDS(binomMat, file = 'running_code/processed_data/spleen/binomMat_pkhl_50.RDS')
 binomMat <- readRDS('running_code/processed_data/spleen/binomMat_pkhl_50.RDS')
 
-subset.list <- crawdad::selectSubsets(binomMat,
-                                      cells$celltypes,
-                                      sub.type = "near",
-                                      sub.thresh = 0.05,
-                                      ncores = ncores,
-                                      verbose = TRUE)
-## Time to compute was 0.17mins
-saveRDS(subset.list, file = 'running_code/processed_data/spleen/subsetlist_pkhl_50.RDS')
+# subset.list <- crawdad::selectSubsets(binomMat,
+#                                       cells$celltypes,
+#                                       sub.type = "near",
+#                                       sub.thresh = 0.05,
+#                                       ncores = ncores,
+#                                       verbose = TRUE)
+# ## Time to compute was 0.17mins
+# saveRDS(subset.list, file = 'running_code/processed_data/spleen/subsetlist_pkhl_50.RDS')
 subset.list <- readRDS('running_code/processed_data/spleen/subsetlist_pkhl_50.RDS')
 
 cells$celltypes <- as.factor(cells$celltypes)
-results.subsets <- crawdad::findTrends(cells,
-                                       dist = 50,
-                                       shuffle.list = shuffle.list,
-                                       subset.list = subset.list,
-                                       ncores = ncores,
-                                       verbose = TRUE,
-                                       returnMeans = FALSE)
-## Time was 715.76 mins
-## subsets
-dats <- crawdad::meltResultsList(results.subsets, withPerms = TRUE)
-saveRDS(dats, file = 'running_code/processed_data/spleen/dats_pkhl_50.RDS')
+# results.subsets <- crawdad::findTrends(cells,
+#                                        dist = 50,
+#                                        shuffle.list = shuffle.list,
+#                                        subset.list = subset.list,
+#                                        ncores = ncores,
+#                                        verbose = TRUE,
+#                                        returnMeans = FALSE)
+# ## Time was 715.76 mins
+# ## subsets
+# dats <- crawdad::meltResultsList(results.subsets, withPerms = TRUE)
+# saveRDS(dats, file = 'running_code/processed_data/spleen/dats_pkhl_50.RDS')
 dats <- readRDS('running_code/processed_data/spleen/dats_pkhl_50.RDS')
 
 ## Multiple-test correction
@@ -128,10 +128,10 @@ dat_filtered <- dat %>%
   filter(neighbor != 'indistinct') %>% 
   filter(reference != 'indistinct')
 
-p <- vizColocDotplot(dat_filtered, zsigThresh = zsig, zscoreLimit = zsig*2, 
+p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2, 
                      reorder = TRUE, dotSizes = c(2, 14)) +
   # scale_x_discrete(limits = ct_order, position = 'top') +
-  # scale_y_discrete(limits = ct_order, position = 'right') +
+  scale_y_discrete(position = 'right') +
   theme(legend.position='bottom',
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
@@ -154,7 +154,7 @@ ct_subset <- paste(ct_ngb, 'near', ct_ref, sep = '_')
 ## selected CD4 Color '#FFFF00' and got 30% shades above and below
 ## https://maketintsandshades.com/#FFFF00
 ## the other color is the Fol B
-colors_subset <- c('#b3b300', '#ffff4d', '#00FF00')
+colors_subset <- c('#941C6A', '#EE62AB', '#A7F5AE')
 
 idx_ref_all <- as.character(which(cells$celltypes == ct_ref))
 idx_ngb_all <- as.character(which(cells$celltypes == ct_ngb))
