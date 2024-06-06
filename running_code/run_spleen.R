@@ -151,10 +151,10 @@ ct_order <- readRDS('running_code/processed_data/ct_order_spleen.RDS')
 ct_ngb <- 'CD4 Memory T cells'
 ct_ref <- 'Fol B cells'
 ct_subset <- paste(ct_ngb, 'near', ct_ref, sep = '_')
-## selected CD4 Color '#FFFF00' and got 30% shades above and below
-## https://maketintsandshades.com/#FFFF00
+## got the colors from the umap image and corrected the 50% opacy
+## details in the xxcd figure
 ## the other color is the Fol B
-colors_subset <- c('#941C6A', '#EE62AB', '#A7F5AE')
+colors_subset <- c('#b3005a', '#ff4da6', '#00FF80')
 
 idx_ref_all <- as.character(which(cells$celltypes == ct_ref))
 idx_ngb_all <- as.character(which(cells$celltypes == ct_ngb))
