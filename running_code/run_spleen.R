@@ -202,10 +202,18 @@ cells_subset <- cells %>%
   mutate(celltypes = case_when(row_number() %in% idx_ref_all ~ 'Reference', 
                                row_number() %in% idx_ngb_near ~ 'Near',
                                row_number() %in% idx_ngb_notnear ~ 'Not near',
-                               T ~ NA))
-crawdad::vizClusters(cells = cells_subset)
+                               T ~ 'other'))
+
+colors_subset <- c('Near' = '#b3005a', 'Not near' = '#ff4da6', 
+                  'Reference' = '#00FF80', 'other' = '#E6E6E6')
+
+ordered_cts <- names(sort(table(cells_subset$celltypes), decreasing = T))
+cells_subset <- cells_subset %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
+  scale_color_manual(values = colors_subset) +
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/pkhl_subset_spatial_plot.pdf',
@@ -408,10 +416,18 @@ cells_subset <- cells %>%
   mutate(celltypes = case_when(row_number() %in% idx_ref_all ~ 'Reference', 
                                row_number() %in% idx_ngb_near ~ 'Near',
                                row_number() %in% idx_ngb_notnear ~ 'Not near',
-                               T ~ NA))
-crawdad::vizClusters(cells = cells_subset)
+                               T ~ 'other'))
+
+colors_subset <- c('Near' = '#b3005a', 'Not near' = '#ff4da6', 
+                   'Reference' = '#00FF80', 'other' = '#E6E6E6')
+
+ordered_cts <- names(sort(table(cells_subset$celltypes), decreasing = T))
+cells_subset <- cells_subset %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
+  scale_color_manual(values = colors_subset) +
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/xxcd_subset_spatial_plot.pdf',
@@ -611,10 +627,18 @@ cells_subset <- cells %>%
   mutate(celltypes = case_when(row_number() %in% idx_ref_all ~ 'Reference', 
                                row_number() %in% idx_ngb_near ~ 'Near',
                                row_number() %in% idx_ngb_notnear ~ 'Not near',
-                               T ~ NA))
-crawdad::vizClusters(cells = cells_subset)
+                               T ~ 'other'))
+
+colors_subset <- c('Near' = '#b3005a', 'Not near' = '#ff4da6', 
+                   'Reference' = '#00FF80', 'other' = '#E6E6E6')
+
+ordered_cts <- names(sort(table(cells_subset$celltypes), decreasing = T))
+cells_subset <- cells_subset %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
+  scale_color_manual(values = colors_subset) +
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/fsld_subset_spatial_plot.pdf',
@@ -809,10 +833,18 @@ cells_subset <- cells %>%
   mutate(celltypes = case_when(row_number() %in% idx_ref_all ~ 'Reference', 
                                row_number() %in% idx_ngb_near ~ 'Near',
                                row_number() %in% idx_ngb_notnear ~ 'Not near',
-                               T ~ NA))
-crawdad::vizClusters(cells = cells_subset)
+                               T ~ 'other'))
+
+colors_subset <- c('Near' = '#b3005a', 'Not near' = '#ff4da6', 
+                   'Reference' = '#00FF80', 'other' = '#E6E6E6')
+
+ordered_cts <- names(sort(table(cells_subset$celltypes), decreasing = T))
+cells_subset <- cells_subset %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
+  scale_color_manual(values = colors_subset) +
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/pbvn_subset_spatial_plot.pdf',
@@ -1008,10 +1040,18 @@ cells_subset <- cells %>%
   mutate(celltypes = case_when(row_number() %in% idx_ref_all ~ 'Reference', 
                                row_number() %in% idx_ngb_near ~ 'Near',
                                row_number() %in% idx_ngb_notnear ~ 'Not near',
-                               T ~ NA))
-crawdad::vizClusters(cells = cells_subset)
+                               T ~ 'other'))
+
+colors_subset <- c('Near' = '#b3005a', 'Not near' = '#ff4da6', 
+                   'Reference' = '#00FF80', 'other' = '#E6E6E6')
+
+ordered_cts <- names(sort(table(cells_subset$celltypes), decreasing = T))
+cells_subset <- cells_subset %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
+  scale_color_manual(values = colors_subset) +
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/ksfb_subset_spatial_plot.pdf',
@@ -1207,10 +1247,18 @@ cells_subset <- cells %>%
   mutate(celltypes = case_when(row_number() %in% idx_ref_all ~ 'Reference', 
                                row_number() %in% idx_ngb_near ~ 'Near',
                                row_number() %in% idx_ngb_notnear ~ 'Not near',
-                               T ~ NA))
-crawdad::vizClusters(cells = cells_subset)
+                               T ~ 'other'))
+
+colors_subset <- c('Near' = '#b3005a', 'Not near' = '#ff4da6', 
+                   'Reference' = '#00FF80', 'other' = '#E6E6E6')
+
+ordered_cts <- names(sort(table(cells_subset$celltypes), decreasing = T))
+cells_subset <- cells_subset %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
 p <- vizClusters(cells_subset, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = colors_subset, na.value = '#E6E6E6') +
+  scale_color_manual(values = colors_subset) +
   theme_void()
 p
 pdf('running_code/paper_figures/spleen/ngpl_subset_spatial_plot.pdf',
