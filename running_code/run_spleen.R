@@ -6,6 +6,9 @@ ncores <- 7
 # pkhl --------------------------------------------------------------------
 
 data('pkhl')
+range(pkhl$x)
+range(pkhl$y)
+
 cells <- crawdad::toSF(pos = pkhl[,c("x", "y")],
                        celltypes = pkhl$celltypes)
 
