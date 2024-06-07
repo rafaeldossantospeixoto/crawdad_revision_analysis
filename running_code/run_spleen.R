@@ -575,7 +575,7 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
-pdf('running_code/paper_figures/spleen/fsld_dotplot.pdf', height = 8, width = 6.7)
+pdf('running_code/paper_figures/spleen/fsld_dotplot.pdf', height = 6.7, width = 8)
 p
 dev.off()
 
@@ -781,7 +781,7 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
-pdf('running_code/paper_figures/spleen/pbvn_dotplot.pdf', height = 8, width = 6.7)
+pdf('running_code/paper_figures/spleen/pbvn_dotplot.pdf', height = 6.7, width = 8)
 p
 dev.off()
 
@@ -988,7 +988,7 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
-pdf('running_code/paper_figures/spleen/ksfb_dotplot.pdf', height = 8, width = 6.7)
+pdf('running_code/paper_figures/spleen/ksfb_dotplot.pdf', height = 6.7, width = 8)
 p
 dev.off()
 
@@ -1195,7 +1195,7 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
-pdf('running_code/paper_figures/spleen/ngpl_dotplot.pdf', height = 8, width = 6.7)
+pdf('running_code/paper_figures/spleen/ngpl_dotplot.pdf', height = 6.7, width = 8)
 p
 dev.off()
 
