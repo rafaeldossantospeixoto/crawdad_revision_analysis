@@ -135,7 +135,7 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
                        breaks = c(-zsig*2, 0, zsig*2),
                        limits=c(-zsig*2, zsig*2)) + 
   ggplot2::scale_radius(trans = 'reverse',
-                        breaks = c(1750, 1000, 500, 100),
+                        breaks = rev(c(1750, 1000, 500, 100)),
                         limits = c(1750, 100),
                         range = c(2, 14)) +
   # scale_x_discrete(limits = ct_order, position = 'top') +
@@ -351,7 +351,7 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
                         breaks = c(-zsig*2, 0, zsig*2),
                         limits=c(-zsig*2, zsig*2)) + 
   ggplot2::scale_radius(trans = 'reverse',
-                        breaks = c(1750, 1000, 500, 100),
+                        breaks = rev(c(1750, 1000, 500, 100)),
                         limits = c(1750, 100),
                         range = c(2, 14)) +
   scale_x_discrete(limits = ct_order, position = 'bottom') +
@@ -565,13 +565,13 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
                         breaks = c(-zsig*2, 0, zsig*2),
                         limits=c(-zsig*2, zsig*2)) + 
   ggplot2::scale_radius(trans = 'reverse',
-                        breaks = c(1750, 1000, 500, 100),
+                        breaks = rev(c(1750, 1000, 500, 100)),
                         limits = c(1750, 100),
                         range = c(2, 14)) +
   scale_x_discrete(limits = ct_order, position = 'top') +
   scale_y_discrete(limits = ct_order, position = 'right') +
   coord_fixed() + 
-  theme(legend.position='bottom',
+  theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
@@ -771,13 +771,13 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
                         breaks = c(-zsig*2, 0, zsig*2),
                         limits=c(-zsig*2, zsig*2)) + 
   ggplot2::scale_radius(trans = 'reverse',
-                        breaks = c(1750, 1000, 500, 100),
+                        breaks = rev(c(1750, 1000, 500, 100)),
                         limits = c(1750, 100),
                         range = c(2, 14)) +
   scale_x_discrete(limits = ct_order, position = 'top') +
   scale_y_discrete(limits = ct_order, position = 'right') +
   coord_fixed() + 
-  theme(legend.position='bottom',
+  theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
@@ -978,13 +978,13 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
                         breaks = c(-zsig*2, 0, zsig*2),
                         limits=c(-zsig*2, zsig*2)) + 
   ggplot2::scale_radius(trans = 'reverse',
-                        breaks = c(1750, 1000, 500, 100),
+                        breaks = rev(c(1750, 1000, 500, 100)),
                         limits = c(1750, 100),
                         range = c(2, 14)) +
   scale_x_discrete(limits = ct_order, position = 'top') +
   scale_y_discrete(limits = ct_order, position = 'right') +
   coord_fixed() + 
-  theme(legend.position='bottom',
+  theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
@@ -1185,13 +1185,13 @@ p <- vizColocDotplot(dat_filtered, zSigThresh = zsig, zScoreLimit = zsig*2,
                         breaks = c(-zsig*2, 0, zsig*2),
                         limits=c(-zsig*2, zsig*2)) + 
   ggplot2::scale_radius(trans = 'reverse',
-                        breaks = c(1750, 1000, 500, 100),
+                        breaks = rev(c(1750, 1000, 500, 100)),
                         limits = c(1750, 100),
                         range = c(2, 14)) +
   scale_x_discrete(limits = ct_order, position = 'top') +
   scale_y_discrete(limits = ct_order, position = 'right') +
   coord_fixed() + 
-  theme(legend.position='bottom',
+  theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0),
         legend.box = 'vertical')
 p
