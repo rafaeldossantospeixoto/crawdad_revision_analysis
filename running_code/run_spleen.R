@@ -1266,3 +1266,48 @@ pdf('running_code/paper_figures/spleen/ngpl_subset_spatial_plot.pdf',
 p
 dev.off()
 
+
+
+
+
+
+# All samples -------------------------------------------------------------
+
+## Proportion dispersion ---------------------------------------------------
+
+## Subsets
+ct_ngb <- 'CD4 Memory T cells'
+ct_ref <- 'Fol B cells'
+
+df_prop_ref <- data.frame('sample' = c('pkhl', 'xxcd', 'fsld', 'pbvn', 'ksfb', 'ngpl'),
+                          'proportion' = c(0.47, 0.38, 0.43, 0.52, 0.41, 0.37),
+                          'condition' = paste(ct_ngb, 'near', ct_ref))
+
+df_prop_ref_pat <- df_prop_ref %>% 
+  mutate(patient = case_when(sample %in% c('pkhl', 'xxcd') ~ 'HBM966.VNKN.965',
+                             sample %in% c('fsld', 'pbvn') ~ 'HBM245.ZWNT.288',
+                             sample %in% c('ksfb', 'ngpl') ~ 'HBM298.KGNJ.374',
+                             T ~ 'none'))
+
+df_stats_prop <- data.frame('mean' = mean(df_prop_ref$proportion),
+                            'sd' = sd(df_prop_ref$proportion),
+                            'condition' = paste(ct_ngb, 'near', ct_ref))
+
+
+p <- ggplot() + 
+  geom_errorbar(data = df_stats_prop, 
+                aes(y=mean, x=condition, ymin=mean-sd, ymax=mean+sd), 
+                width = 0.25) +
+  geom_point(data = df_prop_ref_pat, 
+             aes(y=proportion, x=condition, color=patient),
+             size = 5) +
+  ylim(0, .6) + 
+  scale_color_manual(values = c('#009440', '#ffcb00', '#302681')) +
+  theme_minimal()
+print(p)
+pdf(paste0('running_code/paper_figures/spleen/',
+           'dispersion.pdf'),
+    height = 6, width = 4.5)
+print(p)
+dev.off()
+
