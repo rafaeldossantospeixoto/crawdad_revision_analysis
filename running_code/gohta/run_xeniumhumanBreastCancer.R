@@ -2,8 +2,6 @@
 
 # Set up ------------------------------------------------------------------
 
-source("running_code/functions.R")
-
 library(SpatialExperiment)
 library(Matrix)
 library(crawdad)
@@ -11,6 +9,8 @@ library(tidyverse)
 library(ggplot2)
 library(ggrastr)
 library(here)
+
+source(here("running_code", "gohta", "functions.R"))
 
 dataset_name <- "xenium_humanBreastCancer"
 

@@ -2,8 +2,6 @@
 
 # Set up ------------------------------------------------------------------
 
-source("running_code/functions.R")
-
 library(SpatialExperiment)
 library(Matrix)
 library(crawdad)
@@ -12,6 +10,8 @@ library(here)
 library(ggplot2)
 library(gridExtra)
 library(pracma)
+
+source(here("running_code", "gohta", "functions.R"))
 
 # Run method --------------------------------------------------------------
 

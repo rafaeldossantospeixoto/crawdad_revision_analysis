@@ -4,12 +4,12 @@
 
 # Set up ------------------------------------------------------------------
 
-source("running_code/functions.R")
-
 library(SpatialExperiment)
 library(Matrix)
 library(ggplot2)
 library(here)
+
+source(here("running_code", "gohta", "functions.R"))
 
 par(mfrow=c(1,1))
 
