@@ -389,3 +389,75 @@ pdf(paste0('function_development/comparing_samples/paper_figures/',
     height = 5, width = 7)
 p
 dev.off()
+
+
+
+## Plot spatial ------------------------------------------------------------
+
+## Top 2 and top 4
+## fsld, xxcd, ngpl
+colors_subset <- c('Fol B cells' = 'yellow', 'Blood endothelial' = 'red', 
+                   'Ki67 proliferating' = 'blue', 'other' = '#E6E6E6')
+
+xxcd <- read.csv2(file = '../CRAWDAD/data/spleen/XXCD.meta.csv.gz', row.names = 1)
+cells <- crawdad::toSF(pos = xxcd[,c("x", "y")],
+                       celltypes = xxcd$celltypes) %>% 
+  mutate(celltypes = case_when(celltypes %in% names(colors_subset) ~ celltypes,
+                               T ~ 'other'))
+ordered_cts <- names(sort(table(cells$celltypes), decreasing = T))
+cells <- cells %>% 
+  arrange(match(celltypes, ordered_cts))
+
+
+p <- vizClusters(cells, ofInterest = names(colors_subset), 
+                 alpha = 1, pointSize = .01) +
+  scale_color_manual(values = colors_subset) +
+  theme_void()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'xxcd_spatial.pdf'),
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+fsld <- read.csv2(file = '../CRAWDAD/data/spleen/FSLD.meta.csv.gz', row.names = 1)
+cells <- crawdad::toSF(pos = fsld[,c("x", "y")],
+                       celltypes = fsld$celltypes) %>% 
+  mutate(celltypes = case_when(celltypes %in% names(colors_subset) ~ celltypes,
+                               T ~ 'other'))
+ordered_cts <- names(sort(table(cells$celltypes), decreasing = T))
+cells <- cells %>% 
+  arrange(match(celltypes, ordered_cts))
+p <- vizClusters(cells, ofInterest = names(colors_subset), 
+                 alpha = 1, pointSize = .01) +
+  scale_color_manual(values = colors_subset) +
+  theme_void()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'fsld_spatial.pdf'),
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ngpl <- read.csv2(file = '../CRAWDAD/data/spleen/NGPL.meta.csv.gz', row.names = 1)
+cells <- crawdad::toSF(pos = ngpl[,c("x", "y")],
+                       celltypes = ngpl$celltypes) %>% 
+  mutate(celltypes = case_when(celltypes %in% names(colors_subset) ~ celltypes,
+                               T ~ 'other'))
+ordered_cts <- names(sort(table(cells$celltypes), decreasing = T))
+cells <- cells %>% 
+  arrange(match(celltypes, ordered_cts))
+p <- vizClusters(cells, ofInterest = names(colors_subset), 
+                 alpha = 1, pointSize = .01) +
+  scale_color_manual(values = colors_subset) +
+  theme_void()
+p
+pdf(paste0('function_development/comparing_samples/paper_figures/',
+           'ngpl_spatial.pdf'),
+    height = 7, width = 12)
+p
+dev.off()
