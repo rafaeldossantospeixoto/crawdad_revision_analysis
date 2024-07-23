@@ -50,8 +50,8 @@ set.seed(42)
 dat_50 <- readRDS('running_code/processed_data/dat_slide_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
-vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
-                zscoreLimit = zsig*2, 
+vizColocDotplot(dat_50, reorder = TRUE, zSigThresh = zsig, 
+                zScoreLimit = zsig*2, 
                 dotSizes = c(2, 14)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
@@ -121,5 +121,29 @@ p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
 p
 pdf('running_code/paper_figures/cerebellum/spatial_plot_purkinje.pdf',
     height = 7, width = 12)
+p
+dev.off()
+
+
+
+## Trend plot --------------------------------------------------------------
+
+p <- dat_50 %>% 
+  filter(reference == 'Bergmann') %>% 
+  filter(neighbor == 'Purkinje') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig) 
+p
+pdf('running_code/paper_figures/cerebellum/trend_refBergmann_neighPurkinje_crawdad.pdf',
+    height = 4, width = 6)
+p
+dev.off()
+
+p <- dat_50 %>% 
+  filter(reference == 'Oligodendrocytes') %>% 
+  filter(neighbor == 'Purkinje') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig)
+p
+pdf('running_code/paper_figures/cerebellum/trend_refOligodendrocytes_neighPurkinje_crawdad.pdf',
+    height = 4, width = 6)
 p
 dev.off()

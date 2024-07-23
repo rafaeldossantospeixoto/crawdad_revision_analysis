@@ -167,8 +167,8 @@ set.seed(42)
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
-p <- vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
-                zscoreLimit = zsig*2, mutual = T, dotSizes = c(1, 10)) +
+p <- vizColocDotplot(dat_50, reorder = TRUE, zSigThresh = zsig, 
+                zScoreLimit = zsig*2, dotSizes = c(1, 10)) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 p
@@ -272,3 +272,26 @@ pdf('running_code/paper_figures/embryo/spatial_plot_intermediatemesoderm.pdf',
 p
 dev.off()
 
+
+
+## Trend plot --------------------------------------------------------------
+
+p <- dat_50 %>% 
+  filter(reference == 'Lateral plate mesoderm') %>% 
+  filter(neighbor == 'Intermediate mesoderm') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig) 
+p
+pdf('running_code/paper_figures/embryo/trend_refLateral_neighIntermediate_crawdad.pdf',
+    height = 4, width = 6)
+p
+dev.off()
+
+p <- dat_50 %>% 
+  filter(reference == 'Cardiomyocytes') %>% 
+  filter(neighbor == 'Intermediate mesoderm') %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig)
+p
+pdf('running_code/paper_figures/embryo/trend_refCardiomyocytes_neighIntermediate_crawdad.pdf',
+    height = 4, width = 6)
+p
+dev.off()
