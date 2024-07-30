@@ -33,11 +33,10 @@ calculateProportions <- function(cells, ref, dist) {
                                              c(rownames(cells), 
                                                paste0(rownames(self_cells), '.1'))), ]
   ## calculate proportions
-  # proportions <- as.vector(round(100*sum(table(neighbor_cells$celltypes)) / 
-  #                                  sum(table(cells$celltypes)), 2))
   proportions <- as.vector(round(100*(table(neighbor_cells$celltypes)) / 
                                    (table(cells$celltypes)), 2))
-  names(proportions) <- names(round(100*table(neighbor_cells$celltypes)/table(cells$celltypes), 2))
+  names(proportions) <- names(round(100*table(neighbor_cells$celltypes) / 
+                                      table(cells$celltypes), 2))
   
   return(proportions)
 }
@@ -60,26 +59,17 @@ calculateProportions <- function(cells, ref, dist) {
 #' reference cell types, given a distance
 #' 
 #' @export
-plotProportions <- function(cells, dist, dotSize = 5) {
+plotProportions <- function(cells, dist) {
   
   ## for each cell type
   celltypes <- unique(cells$celltypes)
   props <- lapply(celltypes, calculateProportions, cells = cells, dist = dist)
-  df <- dplyr::bind_rows(props) %>% 
-    dplyr::mutate(reference = celltypes) %>% 
-    tidyr::pivot_longer(!reference, names_to = 'neighbor', values_to = 'proportion')
+  df <- data.frame(proportions = unlist(props))
   
-  df %>% 
-    ggplot2::ggplot() +
-    ggplot2::geom_point(ggplot2::aes(x = reference, y = neighbor, 
-                                     color = proportion), size = dotSize) +
-    ggplot2::scale_colour_gradient(low = 'white', high = '#006437',
-                                   limits = c(0, 100)) +
-    ggplot2::scale_x_discrete(position = 'bottom') +
-    ggplot2::theme_bw() + 
-    ggplot2::theme(legend.position = 'right',
-                   axis.text.x = ggplot2::element_text(angle = 90, h = 1)) + 
-    ggplot2::coord_equal()
+  df %>% ggplot2::ggplot(ggplot2::aes(x = proportions)) + 
+    ggplot2::geom_histogram(color='#006437', fill='white', bins = 100) +
+    ggplot2::theme_bw()
+  
 }
 
 
@@ -95,23 +85,10 @@ cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 ref <- 'Bergmann'
 dist <- 50
 calculateProportions(cells, ref, dist)
+plotProportions(cells, dist)
 
-cts <- unique(slide$celltypes)
-plotHistPct <- function(cells, references, dist) {
-  proportions <- lapply(references, function(ct) {
-    all_props <- calculateProportions(cells, ct, dist)
-    props <- all_props[names(all_props) != ct]
-    as.numeric(props)
-  })
-  print(unlist(proportions))
-  hist(unlist(proportions), breaks = 100, main = dist)
-}
-
-plotHistPct(cells, cts, dist)
-
-
-plotHistPct(cells, cts, 10)
-plotHistPct(cells, cts, 50)
-plotHistPct(cells, cts, 75)
-plotHistPct(cells, cts, 100)
-plotHistPct(cells, cts, 250)
+plotProportions(cells, 10)
+plotProportions(cells, 50)
+plotProportions(cells, 75)
+plotProportions(cells, 100)
+plotProportions(cells, 250)
