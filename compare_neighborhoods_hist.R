@@ -74,8 +74,6 @@ plotProportions <- function(cells, dist) {
 
 
 
-
-
 ## Test --------------------------------------------------------------------
 
 data('slide')
@@ -92,3 +90,82 @@ plotProportions(cells, 50)
 plotProportions(cells, 75)
 plotProportions(cells, 100)
 plotProportions(cells, 250)
+
+
+
+# Paper figures -----------------------------------------------------------
+
+
+
+## Cerebellum --------------------------------------------------------------
+
+data('slide')
+cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
+
+for (d in c(10, 50, 100)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'histograms/',
+             'slide_', d, '.pdf'),
+      height = 5, width = 7)
+  print(p)
+  dev.off()
+}
+
+
+
+## Embryo ------------------------------------------------------------------
+
+data('seq')
+cells <- crawdad::toSF(pos = seq[,c("x", "y")], celltypes = seq$celltypes)
+
+for (d in c(10, 50, 100)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'histograms/',
+             'seq_', d, '.pdf'),
+      height = 5, width = 7)
+  print(p)
+  dev.off()
+}
+
+
+
+## Sim ------------------------------------------------------------------
+
+data('sim')
+cells <- crawdad::toSF(pos = sim[,c("x", "y")], celltypes = sim$celltypes)
+
+for (d in c(10, 50, 100)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'histograms/',
+             'sim_', d, '.pdf'),
+      height = 5, width = 7)
+  print(p)
+  dev.off()
+}
+
+
+
+## Pkhl ------------------------------------------------------------------
+
+data('pkhl')
+cells <- crawdad::toSF(pos = pkhl[,c("x", "y")], celltypes = pkhl$celltypes)
+
+for (d in c(10, 50, 100)){
+  p <- plotProportions(cells, dist = d)
+  print(p)
+  pdf(paste0('function_development/compare_neighborhoods/paper_figures/',
+             'histograms/',
+             'pkhl_', d, '.pdf'),
+      height = 5, width = 7)
+  print(p)
+  dev.off()
+}
+
+
+
