@@ -22,8 +22,9 @@ p <- vizClusters(cells, alpha = 1, pointSize = 0.001) +
 print(p)
 pdf(paste0('running_code/paper_figures/brain/',
            'merfish_brains_legend', '.pdf'),
-    height = 14, width = 14)
+    height = 7, width = 7)
 print(p)
+dev.off()
 
 ## S1R*
 for (r in 1:3) {
