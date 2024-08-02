@@ -17,9 +17,13 @@ cells <- crawdad::toSF(pos = data.frame(spatialCoords(spe)),
 # saveRDS(ct_colors, 'running_code/processed_data/colors_merfish.RDS')
 ct_colors <- readRDS('running_code/processed_data/colors_merfish.RDS')
 
-vizClusters(cells, alpha = 1, pointSize = 0.001) +
-  scale_color_manual(values = ct_colors) + 
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = 0.001) +
+  scale_color_manual(values = ct_colors)
+print(p)
+pdf(paste0('running_code/paper_figures/brain/',
+           'merfish_brains_legend', r, '.pdf'),
+    height = 14, width = 14)
+print(p)
 
 ## S1R*
 for (r in 1:3) {
