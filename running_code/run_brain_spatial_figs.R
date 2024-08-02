@@ -21,7 +21,7 @@ p <- vizClusters(cells, alpha = 1, pointSize = 0.001) +
   scale_color_manual(values = ct_colors)
 print(p)
 pdf(paste0('running_code/paper_figures/brain/',
-           'merfish_brains_legend', r, '.pdf'),
+           'merfish_brains_legend', '.pdf'),
     height = 14, width = 14)
 print(p)
 
