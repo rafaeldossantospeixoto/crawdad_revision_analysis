@@ -38,7 +38,7 @@ for (r in 1:3) {
   print(p)
   pdf(paste0('running_code/paper_figures/brain/',
              'merfish_brains_s1r', r, '.pdf'),
-      height = 14, width = 14)
+      height = 10, width = 10)
   print(p)
   dev.off()
 }
@@ -55,7 +55,7 @@ for (r in 1:3) {
   print(p)
   pdf(paste0('running_code/paper_figures/brain/',
              'merfish_brains_s2r', r, '.pdf'),
-      height = 14, width = 14)
+      height = 10, width = 10)
   print(p)
   dev.off()
 }
@@ -72,7 +72,7 @@ for (r in 1:3) {
   print(p)
   pdf(paste0('running_code/paper_figures/brain/',
              'merfish_brains_s3r', r, '.pdf'),
-      height = 14, width = 14)
+      height = 10, width = 10)
   print(p)
   dev.off()
 }
