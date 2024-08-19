@@ -95,26 +95,41 @@ zsigs <- round(qnorm(psigs/2, lower.tail = F), 2)
 
 ## Paper figures -----------------------------------------------------------
 
+
+### Subset ------------------------------------------------------------------
+
 ## Spatial plot
 all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
-ct_colors <- c('Sinusoidal cells' = '#FF0080',
-               'Myeloid cells' = '#0000FF',
-               'Neutrophils/Monocytes' = '#8000FF',
-               'Blood endothelial' = '#FF8000',
-               'CD8 Memory T cells' = '#80FF00',
-               'Macrophages' = '#0080FF',
-               'Fol B cells' = '#00FF00',
-               'B cells, red pulp' = '#FF0000',
-               'Ki67 proliferating' = '#00FFFF',
-               # 'indistinct' = '#00FF80',
-               'CD4 Memory T cells' = '#FFFF00',
-               'Podoplanin' = '#FF00FF')
+# ct_colors <- c('Sinusoidal cells' = '#FF0080',
+#                'Myeloid cells' = '#0000FF',
+#                'Neutrophils/Monocytes' = '#8000FF',
+#                'Blood endothelial' = '#FF8000',
+#                'CD8 Memory T cells' = '#80FF00',
+#                'Macrophages' = '#0080FF',
+#                'Fol B cells' = '#00FF00', 
+#                'B cells, red pulp' = '#FF0000',
+#                'Ki67 proliferating' = '#00FFFF',
+#                'indistinct' = '#E6E6E6', #00FF80',
+#                'CD4 Memory T cells' = '#FFFF00',
+#                'Podoplanin' = '#FF00FF')
+ct_colors <- c('Sinusoidal cells' = '#d5fdaf',
+                     'Myeloid cells' = '#c2fdfe',
+                     'Neutrophils/Monocytes' = '#f8c9a3',
+                     'Blood endothelial' = '#f5a3fc',
+                     'CD8 Memory T cells' = '#c195fb',
+                     'Macrophages' = '#8a8afb',
+                     'Fol B cells' = '#c2fdcd', 
+                     'B cells, red pulp' = '#f5a39c',
+                     'Ki67 proliferating' = '#c2fdae',
+                     'indistinct' = '#e2e2e2', #00FF80',
+                     'CD4 Memory T cells' = '#f5a3c6',
+                     'Podoplanin' = '#ffffb2')
 saveRDS(ct_colors, 'running_code/processed_data/colors_spleen.RDS')
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  ggplot2::guides(colour = "none")
 p
 pdf('running_code/paper_figures/spleen/pkhl_spatial_plot.pdf',
     height = 7, width = 12)
@@ -328,9 +343,9 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
 ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  ggplot2::guides(colour = "none")
 p
 pdf('running_code/paper_figures/spleen/xxcd_spatial_plot.pdf',
     height = 7, width = 12)
@@ -542,9 +557,9 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
 ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  ggplot2::guides(colour = "none")
 p
 pdf('running_code/paper_figures/spleen/fsld_spatial_plot.pdf',
     height = 7, width = 12)
@@ -748,9 +763,9 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
 ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  ggplot2::guides(colour = "none")
 p
 pdf('running_code/paper_figures/spleen/pbvn_spatial_plot.pdf',
     height = 7, width = 12)
@@ -955,9 +970,9 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
 ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  ggplot2::guides(colour = "none")
 p
 pdf('running_code/paper_figures/spleen/ksfb_spatial_plot.pdf',
     height = 7, width = 12)
@@ -1162,9 +1177,9 @@ all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
 ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 
-p <- vizClusters(cells, ofInterest = interest_cts, alpha = 1, pointSize = .01) +
-  scale_color_manual(values = ct_colors, na.value = '#00FF80') +
-  theme_void()
+p <- vizClusters(cells, alpha = 1, pointSize = .01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  ggplot2::guides(colour = "none")
 p
 pdf('running_code/paper_figures/spleen/ngpl_spatial_plot.pdf',
     height = 7, width = 12)
