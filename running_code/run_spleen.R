@@ -95,9 +95,6 @@ zsigs <- round(qnorm(psigs/2, lower.tail = F), 2)
 
 ## Paper figures -----------------------------------------------------------
 
-
-### Subset ------------------------------------------------------------------
-
 ## Spatial plot
 all_cts <- unique(cells$celltypes)
 interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
@@ -114,17 +111,18 @@ interest_cts <- sort(as.character(all_cts[all_cts != 'indistinct']))
 #                'CD4 Memory T cells' = '#FFFF00',
 #                'Podoplanin' = '#FF00FF')
 ct_colors <- c('Sinusoidal cells' = '#d5fdaf',
-                     'Myeloid cells' = '#c2fdfe',
-                     'Neutrophils/Monocytes' = '#f8c9a3',
-                     'Blood endothelial' = '#f5a3fc',
-                     'CD8 Memory T cells' = '#c195fb',
-                     'Macrophages' = '#8a8afb',
-                     'Fol B cells' = '#c2fdcd', 
-                     'B cells, red pulp' = '#f5a39c',
-                     'Ki67 proliferating' = '#c2fdae',
-                     'indistinct' = '#e2e2e2', #00FF80',
-                     'CD4 Memory T cells' = '#f5a3c6',
-                     'Podoplanin' = '#ffffb2')
+               'Myeloid cells' = '#c2fdfe',
+               'Neutrophils/Monocytes' = '#f8c9a3',
+               'Blood endothelial' = '#f5a3fc',
+               'CD8 Memory T cells' = '#c195fb',
+               'Macrophages' = '#8a8afb',
+               'Fol B cells' = '#c2fdcd', 
+               'B cells, red pulp' = '#f5a39c',
+               'Ki67 proliferating' = '#c2fdae',
+               'indistinct' = '#e2e2e2', #00FF80',
+               'CD4 Memory T cells' = '#f5a3c6',
+               'Podoplanin' = '#ffffb2',
+               'other' = '#e2e2e2')
 saveRDS(ct_colors, 'running_code/processed_data/colors_spleen.RDS')
 
 p <- vizClusters(cells, alpha = 1, pointSize = .01) +
@@ -172,6 +170,79 @@ dev.off()
 ct_order <- readRDS('running_code/processed_data/ct_order_spleen.RDS')
 
 
+
+### Selected cts ------------------------------------------------------------
+
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+
+## remove axis and save as png?
+ref <- 'Neutrophils/Monocytes'
+nei <- 'Podoplanin'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/neu_pod/pkhl_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Ki67 proliferating'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/ki6_fol/pkhl_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Blood endothelial'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/blo_fol/pkhl_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Subset ------------------------------------------------------------------
 
 ## Subsets
 ct_ngb <- 'CD4 Memory T cells'
@@ -385,7 +456,78 @@ dev.off()
 
 
 
+### Selected cts ------------------------------------------------------------
 
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+
+## remove axis and save as png?
+ref <- 'Neutrophils/Monocytes'
+nei <- 'Podoplanin'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/neu_pod/xxcd_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Ki67 proliferating'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/ki6_fol/xxcd_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Blood endothelial'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/blo_fol/xxcd_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Subset ------------------------------------------------------------------
 
 ## Subsets
 ct_ngb <- 'CD4 Memory T cells'
@@ -599,7 +741,78 @@ dev.off()
 
 
 
+### Selected cts ------------------------------------------------------------
 
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+
+## remove axis and save as png?
+ref <- 'Neutrophils/Monocytes'
+nei <- 'Podoplanin'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/neu_pod/fsld_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Ki67 proliferating'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/ki6_fol/fsld_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Blood endothelial'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/blo_fol/fsld_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Subset ------------------------------------------------------------------
 
 ## Subsets
 ct_ngb <- 'CD4 Memory T cells'
@@ -805,7 +1018,78 @@ dev.off()
 
 
 
+### Selected cts ------------------------------------------------------------
 
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+
+## remove axis and save as png?
+ref <- 'Neutrophils/Monocytes'
+nei <- 'Podoplanin'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/neu_pod/pbvn_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Ki67 proliferating'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/ki6_fol/pbvn_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Blood endothelial'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/blo_fol/pbvn_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Subset ------------------------------------------------------------------
 
 ## Subsets
 ct_ngb <- 'CD4 Memory T cells'
@@ -1012,7 +1296,78 @@ dev.off()
 
 
 
+### Selected cts ------------------------------------------------------------
 
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+
+## remove axis and save as png?
+ref <- 'Neutrophils/Monocytes'
+nei <- 'Podoplanin'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/neu_pod/ksfb_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Ki67 proliferating'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/ki6_fol/ksfb_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Blood endothelial'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/blo_fol/ksfb_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Subset ------------------------------------------------------------------
 
 ## Subsets
 ct_ngb <- 'CD4 Memory T cells'
@@ -1219,7 +1574,78 @@ dev.off()
 
 
 
+### Selected cts ------------------------------------------------------------
 
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+
+## remove axis and save as png?
+ref <- 'Neutrophils/Monocytes'
+nei <- 'Podoplanin'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/neu_pod/ngpl_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Ki67 proliferating'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/ki6_fol/ngpl_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+ref <- 'Blood endothelial'
+nei <- 'Fol B cells'
+## visualize the subset only
+cells_selected <- cells %>% 
+  mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
+                               T ~ 'other'))
+ordered_scts <- names(sort(table(cells_selected$celltypes), decreasing = T))
+cells_selected <- cells_selected %>% 
+  arrange(match(celltypes, ordered_scts))
+
+p <- vizClusters(cells_selected, alpha = 1, pointSize = 1.01) +
+  scale_color_manual(values = ct_colors, na.value = '#e2e2e2') +
+  theme_void() + 
+  ggplot2::guides(colour = "none")
+p
+pdf('running_code/paper_figures/spleen/selected_cts/blo_fol/ngpl_spatial_plot.pdf',
+    height = 7, width = 12)
+p
+dev.off()
+
+
+
+### Subset ------------------------------------------------------------------
 
 ## Subsets
 ct_ngb <- 'CD4 Memory T cells'
