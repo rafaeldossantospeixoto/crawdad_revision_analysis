@@ -7,7 +7,7 @@
 #' used to cheate the null background.
 #' 
 #' @param cells sf object; spatial (x and y) coordinates and celltypes column
-#' @param gridSize numeric; size of the grid to plot
+#' @param scale numeric; size of the scale to plot
 #' @param square boolean; if true, create a squared grid, if false, make 
 #' hexagonal grid (default TRUE)
 #' @param ofInterest character vector; a vector of specific clusters to visualize
