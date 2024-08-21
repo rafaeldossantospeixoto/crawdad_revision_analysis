@@ -91,6 +91,7 @@ vizClusters <- function(cells, ofInterest = NULL,
 
 # Testing -----------------------------------------------------------------
 
+library(crawdad)
 data(slide)
 cells <- crawdad:::toSF(pos = slide[,c("x", "y")],
                         celltypes = slide$celltypes)
@@ -102,8 +103,8 @@ interest_cts <- c('UBCs',
 interest_ct_colors <- ct_colors[interest_cts]
 vizClusters(cells, ofInterest = interest_cts, ref = 'UBCs', dist = 50,
             alpha = 1, pointSize = 1) + 
-  scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
-  theme_minimal()
+  ggplot2::scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
+  ggplot2::theme_minimal()
 vizClusters(cells, ofInterest = interest_cts, ref = 'Granule', dist = 50,
             alpha = 1, pointSize = 1) + 
   scale_color_manual(values = interest_ct_colors, na.value = '#E6E6E6') +
