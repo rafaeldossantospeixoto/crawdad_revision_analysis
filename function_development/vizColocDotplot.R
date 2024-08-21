@@ -187,5 +187,9 @@ vizColocDotplot(dat_50, zsigThresh = zsig, zscoreLimit = 2*zsig, reorder = T,
 # p
 # dev.off()
 
-
+## vizColocDotplot will be deprecated
+vizRelationships(dat_50, zSigThresh = zsig, zScoreLimit = 2*zsig, reorder = T,
+                 symmetrical = T, dotSizes = c(3,10))  +
+  theme(legend.position='right',
+        axis.text.x = element_text(angle = 45, h = 0))
 
