@@ -1,3 +1,11 @@
+
+# Description -------------------------------------------------------------
+
+## this script verifies the effects of unionizing the circles around each cell
+## to create the neighborhood versus counting the cells inside each circle 
+## individually and therefore considering duplicates
+
+
 library(crawdad)
 library(tidyverse)
 
