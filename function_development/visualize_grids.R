@@ -8,6 +8,9 @@
 #' 
 #' @param cells sf object; spatial (x and y) coordinates and celltypes column
 #' @param scale numeric; size of the scale to plot
+#' @param permutation numeric; the number of the permutation of interest.
+#' @param totalPermutations numeric; the total number of permutations used to 
+#' shuffle the data.
 #' @param square boolean; if true, create a squared grid, if false, make 
 #' hexagonal grid (default TRUE)
 #' @param ofInterest character vector; a vector of specific clusters to visualize
