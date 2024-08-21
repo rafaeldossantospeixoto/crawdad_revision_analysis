@@ -1,3 +1,8 @@
+
+# Description -------------------------------------------------------------
+
+## read the output of each method and plot them using the same style
+
 library(crawdad)
 library(tidyverse)
 
