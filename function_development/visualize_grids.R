@@ -4,7 +4,7 @@
 #' Visualize grids and clusters
 #' 
 #' @description Uses the cells sf object and size of grid to visualize the grids 
-#' used to cheate the null background.
+#' used to create the null background.
 #' 
 #' @param cells sf object; spatial (x and y) coordinates and celltypes column
 #' @param scale numeric; size of the scale to plot
