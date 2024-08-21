@@ -4,11 +4,12 @@
 #' Visualize grids and clusters
 #' 
 #' @description Uses the cells sf object and size of grid to visualize the grids 
-#' and clusters.
+#' used to cheate the null background.
 #' 
 #' @param cells sf object; spatial (x and y) coordinates and celltypes column
 #' @param gridSize numeric; size of the grid to plot
-#' @param square if false, make hexagonal grid (default TRUE)
+#' @param square boolean; if true, create a squared grid, if false, make 
+#' hexagonal grid (default TRUE)
 #' @param ofInterest character vector; a vector of specific clusters to visualize
 #' @param pointSize numeric; size of points
 #' @param alpha numeric; transparency of points
@@ -23,9 +24,9 @@
 #' }
 #' 
 #' @export
-vizGrids <- function(cells, scale, shuffledList = NULL,
-                     totalPermutations = NULL, permutation = 1, 
-                     square = square,
+vizGrids <- function(cells, scale,
+                     permutation = 1, totalPermutations = NULL, 
+                     square = TRUE,
                      ofInterest = NULL, pointSize = 1, alpha = 0.5){
 
   ## the total number of permutations is used to calculate the offset, so if the
@@ -62,18 +63,7 @@ vizGrids <- function(cells, scale, shuffledList = NULL,
     ## add in the grid information on top of the plot
     ggplot2::geom_sf(data = grid, fill = NA) +
     ggplot2::geom_text(data = grid_coords_centroids, 
-                       ggplot2::aes(X, Y, label = name)) +
-    ggplot2::guides(color = "none") +
-    ggplot2::theme(axis.line = ggplot2::element_blank(),       # Remove axis lines
-          axis.text = ggplot2::element_blank(),       # Remove axis text
-          axis.ticks = ggplot2::element_blank(),      # Remove axis ticks
-          axis.title = ggplot2::element_blank(),      # Remove axis titles
-          panel.background = ggplot2::element_blank(), # Remove panel background,
-          axis.text.x = ggplot2::element_blank(),
-          axis.text.y = ggplot2::element_blank(),
-          axis.title.x = ggplot2::element_blank(),
-          axis.title.y = ggplot2::element_blank(),
-          panel.border = ggplot2::element_rect(color = "black", linewidth = 1, fill = NA))
+                       ggplot2::aes(X, Y, label = name))
 }
 
 library(crawdad)
@@ -90,7 +80,7 @@ vizClusters(cells, pointSize = .1)
 # Apply -------------------------------------------------------------------
 
 library(crawdad)
-library(tidyverse)
+# library(tidyverse)
 ncores <- 7
 
 data(sim)
@@ -98,4 +88,5 @@ sim <- crawdad:::toSF(pos = sim[,c("x", "y")],
                       celltypes = sim$celltypes)
 dat <- readRDS('running_code/processed_data/dat_sim_50.RDS')
 
-vizGrids(sim, 300)
+vizGrids(sim, scale =  300)
+vizGrids(sim, scale =  300, permutation = 3, totalPermutations = 10)
