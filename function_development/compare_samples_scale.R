@@ -1,3 +1,11 @@
+
+# Description -------------------------------------------------------------
+
+## uses the scale of significance to compare samples, but does not consider
+## relationships that do not reach statistical significance.
+## the function works, but was replaced by comparing samples by AUC as it
+## evaluates all the relationships and not just the significant ones
+
 # Functions ---------------------------------------------------------------
 
 #' Define Relationship Type
