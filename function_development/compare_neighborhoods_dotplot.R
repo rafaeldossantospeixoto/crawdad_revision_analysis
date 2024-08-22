@@ -1,3 +1,9 @@
+
+# Description -------------------------------------------------------------
+
+## compare neighborhoods using a dot plot visualization. This function is not 
+## used and it was replaced by the compare neighborhoods using a histogram.
+
 library(crawdad)
 # library(tidyverse)
 
