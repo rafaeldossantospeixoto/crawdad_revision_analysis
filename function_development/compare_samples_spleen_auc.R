@@ -1,3 +1,9 @@
+
+# Description -------------------------------------------------------------
+
+## Draft compare samples using AUC and run comparison for spleen
+
+
 library(crawdad)
 library(tidyverse)
 
