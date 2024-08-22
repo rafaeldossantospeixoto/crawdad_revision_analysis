@@ -16,8 +16,9 @@ library(crawdad)
 #' @param ref character; reference cell type to define neighborhood around
 #' @param dist numeric vector; distances used to define the neighborhoods
 #' 
-#' @return named vector; 
-calculateProportions <- function(cells, ref, dist) {
+#' @return named vector; the proportions
+#' 
+calculateCelltypeProportions <- function(cells, ref, dist) {
   ## create a circle around each reference cell 
   neighborhood <- sf::st_buffer(cells[cells$celltypes == ref,], dist) 
   ## merge the circles into a neighborhood (can take some time to compute)
@@ -43,27 +44,26 @@ calculateProportions <- function(cells, ref, dist) {
 
 
 
-#' Compare neighborhoods
+#' Plot Cell-type Proportions
 #' 
-#' For a reference cell type and different neighborhood distances, plot the 
-#' proportion of each neighbor cell type inside the neighborhood of the reference
-#' cell type at those distances.
+#' For a chosen a neighborhood distance, plot a histogram of 
+#' the proportion of each neighbor cell type inside the neighborhood of the 
+#' reference cell type for all reference cell types.
 #' 
 #' @param cells sf data.frame; as produced by crawdad::toSF function: cells with 
 #' cell types annotated in the celltypes column and point positions in the 
 #' geometry column
 #' @param dist numeric; distance used to define the neighborhood
-#' @param dotSize numeric; size of the dot
 #' 
-#' @return ggplot2 plot; the proportion of each neighbor cell type for the 
-#' reference cell types, given a distance
+#' @return ggplot2 plot; the a histogram of the proportions
 #' 
 #' @export
-plotProportions <- function(cells, dist) {
+plotCelltypeProportions <- function(cells, dist) {
   
   ## for each cell type
   celltypes <- unique(cells$celltypes)
-  props <- lapply(celltypes, calculateProportions, cells = cells, dist = dist)
+  props <- lapply(celltypes, calculateCelltypeProportions, 
+                  cells = cells, dist = dist)
   df <- data.frame(proportions = unlist(props))
   
   df %>% ggplot2::ggplot(ggplot2::aes(x = proportions)) + 
@@ -82,14 +82,14 @@ cells <- crawdad::toSF(pos = slide[,c("x", "y")], celltypes = slide$celltypes)
 
 ref <- 'Bergmann'
 dist <- 50
-calculateProportions(cells, ref, dist)
-plotProportions(cells, dist)
+calculateCelltypeProportions(cells, ref, dist)
+plotCelltypeProportions(cells, dist)
 
-plotProportions(cells, 10)
-plotProportions(cells, 50)
-plotProportions(cells, 75)
-plotProportions(cells, 100)
-plotProportions(cells, 250)
+plotCelltypeProportions(cells, 10)
+plotCelltypeProportions(cells, 50)
+plotCelltypeProportions(cells, 75)
+plotCelltypeProportions(cells, 100)
+plotCelltypeProportions(cells, 250)
 
 
 
