@@ -10,7 +10,7 @@ range(pkhl$x)
 range(pkhl$y)
 
 cells <- crawdad::toSF(pos = pkhl[,c("x", "y")],
-                       celltypes = pkhl$celltypes)
+                       cellTypes = pkhl$celltypes)
 
 ggplot(pkhl, aes(x=x, y=y, col=celltypes)) + 
   geom_point(size=0.2, alpha=0.5) +
@@ -178,6 +178,10 @@ ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 ## remove axis and save as png?
 ref <- 'Neutrophils/Monocytes'
 nei <- 'Podoplanin'
+
+## complementary color to Neutrophils/Monocytes
+ct_colors[['Podoplanin']] <- '#a3d2f8'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -200,6 +204,10 @@ dev.off()
 
 ref <- 'Ki67 proliferating'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Ki67 proliferating']] <- '#fdc2f2'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -222,6 +230,10 @@ dev.off()
 
 ref <- 'Blood endothelial'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Blood endothelial']] <- '#c2d4fd'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -326,7 +338,7 @@ range(xxcd$x)
 range(xxcd$y)
 
 cells <- crawdad::toSF(pos = xxcd[,c("x", "y")],
-                       celltypes = xxcd$celltypes)
+                       cellTypes = xxcd$celltypes)
 
 ggplot(xxcd, aes(x=x, y=y, col=celltypes)) + 
   geom_point(size=0.2, alpha=0.5) +
@@ -463,6 +475,10 @@ ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 ## remove axis and save as png?
 ref <- 'Neutrophils/Monocytes'
 nei <- 'Podoplanin'
+
+## complementary color to Neutrophils/Monocytes
+ct_colors[['Podoplanin']] <- '#a3d2f8'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -485,6 +501,10 @@ dev.off()
 
 ref <- 'Ki67 proliferating'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Ki67 proliferating']] <- '#fdc2f2'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -507,6 +527,10 @@ dev.off()
 
 ref <- 'Blood endothelial'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Blood endothelial']] <- '#c2d4fd'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -611,7 +635,7 @@ range(fsld$x)
 range(fsld$y)
 
 cells <- crawdad::toSF(pos = fsld[,c("x", "y")],
-                       celltypes = fsld$celltypes)
+                       cellTypes = fsld$celltypes)
 
 ggplot(fsld, aes(x=x, y=y, col=celltypes)) + 
   geom_point(size=0.2, alpha=0.5) +
@@ -748,6 +772,10 @@ ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 ## remove axis and save as png?
 ref <- 'Neutrophils/Monocytes'
 nei <- 'Podoplanin'
+
+## complementary color to Neutrophils/Monocytes
+ct_colors[['Podoplanin']] <- '#a3d2f8'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -770,6 +798,10 @@ dev.off()
 
 ref <- 'Ki67 proliferating'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Ki67 proliferating']] <- '#fdc2f2'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -792,6 +824,10 @@ dev.off()
 
 ref <- 'Blood endothelial'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Blood endothelial']] <- '#c2d4fd'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -888,7 +924,7 @@ range(pbvn$x)
 range(pbvn$y)
 
 cells <- crawdad::toSF(pos = pbvn[,c("x", "y")],
-                       celltypes = pbvn$celltypes)
+                       cellTypes = pbvn$celltypes)
 
 ggplot(pbvn, aes(x=x, y=y, col=celltypes)) + 
   geom_point(size=0.2, alpha=0.5) +
@@ -1025,6 +1061,10 @@ ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 ## remove axis and save as png?
 ref <- 'Neutrophils/Monocytes'
 nei <- 'Podoplanin'
+
+## complementary color to Neutrophils/Monocytes
+ct_colors[['Podoplanin']] <- '#a3d2f8'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1047,6 +1087,10 @@ dev.off()
 
 ref <- 'Ki67 proliferating'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Ki67 proliferating']] <- '#fdc2f2'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1069,6 +1113,10 @@ dev.off()
 
 ref <- 'Blood endothelial'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Blood endothelial']] <- '#c2d4fd'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1166,7 +1214,7 @@ range(ksfb$x)
 range(ksfb$y)
 
 cells <- crawdad::toSF(pos = ksfb[,c("x", "y")],
-                       celltypes = ksfb$celltypes)
+                       cellTypes = ksfb$celltypes)
 
 ggplot(ksfb, aes(x=x, y=y, col=celltypes)) + 
   geom_point(size=0.2, alpha=0.5) +
@@ -1303,6 +1351,10 @@ ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 ## remove axis and save as png?
 ref <- 'Neutrophils/Monocytes'
 nei <- 'Podoplanin'
+
+## complementary color to Neutrophils/Monocytes
+ct_colors[['Podoplanin']] <- '#a3d2f8'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1325,6 +1377,10 @@ dev.off()
 
 ref <- 'Ki67 proliferating'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Ki67 proliferating']] <- '#fdc2f2'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1347,6 +1403,10 @@ dev.off()
 
 ref <- 'Blood endothelial'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Blood endothelial']] <- '#c2d4fd'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1444,7 +1504,7 @@ range(ngpl$x)
 range(ngpl$y)
 
 cells <- crawdad::toSF(pos = ngpl[,c("x", "y")],
-                       celltypes = ngpl$celltypes)
+                       cellTypes = ngpl$celltypes)
 
 ggplot(ngpl, aes(x=x, y=y, col=celltypes)) + 
   geom_point(size=0.2, alpha=0.5) +
@@ -1581,6 +1641,10 @@ ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
 ## remove axis and save as png?
 ref <- 'Neutrophils/Monocytes'
 nei <- 'Podoplanin'
+
+## complementary color to Neutrophils/Monocytes
+ct_colors[['Podoplanin']] <- '#a3d2f8'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1603,6 +1667,10 @@ dev.off()
 
 ref <- 'Ki67 proliferating'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Ki67 proliferating']] <- '#fdc2f2'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
@@ -1625,6 +1693,10 @@ dev.off()
 
 ref <- 'Blood endothelial'
 nei <- 'Fol B cells'
+ct_colors <- readRDS('running_code/processed_data/colors_spleen.RDS')
+## complementary color to Fol B cells
+ct_colors[['Blood endothelial']] <- '#c2d4fd'
+
 ## visualize the subset only
 cells_selected <- cells %>% 
   mutate(celltypes = case_when(celltypes %in% c(ref, nei) ~ celltypes, 
