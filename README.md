@@ -1,6 +1,6 @@
 # crawdad_revision_analysis
 
-This repository contains code scripts to reproduce analyses and figures for the review process of our *bioRxiv* preprint [Peixoto R. dos S. et al. (2023), "Characterizing cell-type spatial relationships across length scales in spatially resolved omics data", *bioRxiv*](https://doi.org/10.1101/2023.10.05.560733), which evaluates the utility of an R package CRAWDAD.
+This repository contains code scripts to reproduce analyses and figures for the review process of our *bioRxiv* preprint [Peixoto R. dos S. et al. (2023), "Characterizing cell-type spatial relationships across length scales in spatially resolved omics data", *bioRxiv*](https://doi.org/10.1101/2023.10.05.560733), which evaluates the utility of an R package CRAWDAD. A few parameter names were updated to camel case on [CRAWDAD's current version](https://github.com/JEFworks-Lab/CRAWDAD). Check the package documentation if you find errors when running the scripts here.
 
 ## CRAWDAD
 
