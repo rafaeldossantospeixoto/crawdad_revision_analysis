@@ -57,7 +57,7 @@ for (d in c(10, 50, 100)){
 
 data(seq)
 cells <- crawdad:::toSF(pos = seq[,c("x", "y")],
-                        celltypes = seq$celltypes)
+                        cellTypes = seq$celltypes)
 
 ct_colors <- readRDS('running_code/processed_data/colors_seq.RDS')
 
