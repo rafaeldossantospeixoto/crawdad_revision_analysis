@@ -12,7 +12,7 @@ seq %>% ggplot() +
 
 ## convert to sf
 seq <- crawdad:::toSF(pos = seq[,c("x", "y")],
-                        celltypes = seq$celltypes)
+                      cellTypes = seq$celltypes)
 cells <- seq
 
 
@@ -45,9 +45,9 @@ saveRDS(dat_50, 'running_code/processed_data/dat_seq_50.RDS')
 dat_50 <- readRDS('running_code/processed_data/dat_seq_50.RDS')
 
 zsig <- correctZBonferroni(dat_50)
-vizColocDotplot(dat_50, reorder = TRUE, zsigThresh = zsig, 
-                zscoreLimit = zsig*2, 
-                dotSizes = c(2, 12), mutual = T) +
+vizColocDotplot(dat_50, reorder = TRUE, zSigThresh = zsig, 
+                zScoreLimit = zsig*2, 
+                dotSizes = c(2, 12), symmetrical = T) +
   theme(legend.position='right',
         axis.text.x = element_text(angle = 45, h = 0))
 
@@ -295,3 +295,12 @@ pdf('running_code/paper_figures/embryo/trend_refCardiomyocytes_neighIntermediate
     height = 4, width = 6)
 p
 dev.off()
+
+
+# Verify for proofing -------------------------------------------------------
+
+dat_50 %>% 
+  mutate(id = 'embryo') %>% 
+  filter(reference == 'Intermediate mesoderm') %>% 
+  filter(neighbor %in% c('Lateral plate mesoderm', 'Cardiomyocytes')) %>% 
+  vizTrends(lines = TRUE, withPerms = TRUE, zSigThresh = zsig)

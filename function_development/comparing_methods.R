@@ -429,12 +429,20 @@ selected_cts <- c('Cardiomyocytes','Lateral plate mesoderm')
 all_cts <- unique(as.character(dat_50$neighbor))
 ordered_cts <- c(all_cts[!all_cts %in% selected_cts], selected_cts)
 selected_colors <- c('blue', 'red')
+names(selected_colors) <- selected_cts
 all_colors <- c(rep('lightgray', times = length(all_cts) - length(selected_cts)), selected_colors)
 ordered_colors <- setNames(all_colors, ordered_cts)
 
 ### Save plots --------------------------------------------------------------
 
 ## CRAWDAD
+dat_50 %>% 
+  filter(reference == reference_ct, scale <= 750, 
+         neighbor %in% selected_cts) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=scale, y=Z, group = neighbor, color = neighbor), 
+            size = .5)
 p <- dat_50 %>% 
   filter(reference == reference_ct) %>% 
   filter(scale <= 750) %>% 
@@ -456,6 +464,13 @@ p
 dev.off()
 
 ## Squidpy
+dat_sp %>% 
+  filter(reference == reference_ct, distance <= 750, 
+         neighbor %in% selected_cts) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=distance, y=probability, group = neighbor, color = neighbor), 
+            size = .5)
 p <- dat_sp %>% 
   filter(reference == reference_ct) %>% 
   filter(distance <= 750) %>% 
@@ -476,6 +491,13 @@ p
 dev.off()
 
 ## Ripleys
+dat_rk %>% 
+  filter(reference == reference_ct, radius <= 750, 
+         neighbor %in% selected_cts) %>% 
+  mutate(neighbor = factor(neighbor, levels = ordered_cts)) %>% 
+  ggplot() + 
+  geom_line(aes(x=radius, y=score, group = neighbor, color = neighbor), 
+            size = .5)
 p <- dat_rk %>% 
   filter(reference == reference_ct) %>% 
   filter(radius <= 750) %>% 
