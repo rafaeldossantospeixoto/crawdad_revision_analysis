@@ -10,6 +10,11 @@ seq %>% ggplot() +
   geom_point(aes(x, y, color = celltypes), size = .5) + 
   facet_wrap('celltypes')
 
+seq %>% 
+  filter(celltypes %in% c('Presomitic mesoderm', 'Spinal cord')) %>% 
+  ggplot() +
+  geom_point(aes(x, y, color = celltypes), size = .5)
+
 ## convert to sf
 seq <- crawdad:::toSF(pos = seq[,c("x", "y")],
                       cellTypes = seq$celltypes)
